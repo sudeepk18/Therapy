@@ -49,11 +49,14 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
-app.use('/api/v1/auth',         require('./src/routes/auth.routes'));
-app.use('/api/v1/clients',      require('./src/routes/client.routes'));
-app.use('/api/v1/leads',        require('./src/routes/lead.routes'));
-app.use('/api/v1/availability', require('./src/routes/availability.routes'));
-app.use('/api/v1/sessions',     require('./src/routes/session.routes'));
+app.use('/api/v1/auth',          require('./src/routes/auth.routes'));
+app.use('/api/v1/clients',       require('./src/routes/client.routes'));
+app.use('/api/v1/leads',         require('./src/routes/lead.routes'));
+app.use('/api/v1/availability',  require('./src/routes/availability.routes'));
+app.use('/api/v1/sessions',      require('./src/routes/session.routes'));
+app.use('/api/v1/session-notes', require('./src/routes/sessionNote.routes'));
+app.use('/api/v1/packages',      require('./src/routes/package.routes'));
+app.use('/api/v1/payments',      require('./src/routes/payment.routes'));
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {
