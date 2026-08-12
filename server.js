@@ -13,6 +13,7 @@ const cors         = require('cors');
 const helmet       = require('helmet');
 const morgan       = require('morgan');
 const cookieParser = require('cookie-parser');
+const rateLimit    = require('express-rate-limit');
 
 const connectDB = require('./src/config/db');
 
@@ -28,6 +29,29 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
 }));
+
+// ─── Rate Limiting ────────────────────────────────────────────────────────────
+// Global limiter: 200 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+});
+
+// Strict limiter for auth routes: 10 attempts per hour per IP
+// Prevents brute-force attacks on login/register
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many auth attempts. Please try again after 1 hour.' },
+  skipSuccessfulRequests: true, // Only count failed attempts
+});
+
+app.use(globalLimiter);
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV === 'development') {
@@ -49,7 +73,7 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
-app.use('/api/v1/auth',          require('./src/routes/auth.routes'));
+app.use('/api/v1/auth',          authLimiter, require('./src/routes/auth.routes'));
 app.use('/api/v1/clients',       require('./src/routes/client.routes'));
 app.use('/api/v1/leads',         require('./src/routes/lead.routes'));
 app.use('/api/v1/availability',  require('./src/routes/availability.routes'));
