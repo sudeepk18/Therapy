@@ -1,0 +1,111 @@
+/* Shared styles for dashboard widgets */
+
+.widget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.widget-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.widget-row--link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.widget-row--link:hover,
+.widget-row:hover {
+  background: var(--bg-elevated);
+}
+
+/* Date block (sessions) */
+.widget-date-block {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.widget-day {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.widget-month {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Avatar (clients) */
+.widget-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Row info */
+.widget-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.widget-row-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-row-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge */
+.widget-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 99px;
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.widget-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 120px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

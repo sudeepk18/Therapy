@@ -1,0 +1,52 @@
+/* Extra styles needed by detail pages */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.back-link:hover { color: var(--teal); }
+
+.client-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.client-detail-avatar {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.client-detail-name {
+  font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.4px; margin-bottom: 6px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.info-card-icon {
+  width: 30px; height: 30px;
+  background: var(--teal-glow); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal); flex-shrink: 0;
+}
+.info-card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+.info-card-value { font-size: 13px; color: var(--text-primary); font-weight: 500; }
