@@ -1,0 +1,492 @@
+/* ============================================================
+   AI Insights Component Styles
+   Uses existing UNFAZED CSS variables — no hardcoded colors.
+   ============================================================ */
+
+/* ── AI Section Container ───────────────────────────────────── */
+.ai-insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.ai-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ai-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(20,184,166,0.2));
+  color: var(--teal);
+  border: 1px solid rgba(20,184,166,0.25);
+}
+
+/* ── AI Unavailable Banner ──────────────────────────────────── */
+.ai-unavailable {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-md);
+  color: var(--warning);
+  font-size: 13px;
+}
+
+/* ── No-Show Risk Badge ─────────────────────────────────────── */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.risk-badge.HIGH {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.risk-badge.MEDIUM {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.risk-badge.LOW {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.risk-badge.low-confidence {
+  opacity: 0.75;
+}
+
+.risk-badge .risk-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── AI Insight Cards Grid ──────────────────────────────────── */
+.ai-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.ai-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.ai-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px rgba(20,184,166,0.15), 0 4px 24px rgba(0,0,0,0.2);
+}
+
+.ai-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.ai-card-title svg {
+  color: var(--teal);
+}
+
+/* ── High-Risk Session List ─────────────────────────────────── */
+.risk-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  gap: 8px;
+}
+
+.risk-session-client {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.risk-session-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.risk-session-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.risk-session-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Forecast / Chart Section ───────────────────────────────── */
+.forecast-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.forecast-stat {
+  flex: 1;
+  min-width: 100px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.forecast-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.forecast-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.forecast-stat-value.growing { color: var(--success); }
+.forecast-stat-value.declining { color: var(--danger); }
+.forecast-stat-value.stable { color: var(--info); }
+
+/* ── Trend indicator ────────────────────────────────────────── */
+.trend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.trend-pill.GROWING  { background: var(--success-bg); color: var(--success); }
+.trend-pill.DECLINING { background: var(--danger-bg); color: var(--danger);  }
+.trend-pill.STABLE   { background: var(--info-bg);    color: var(--info);    }
+
+/* ── Scheduling Recommendations ─────────────────────────────── */
+.slot-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slot-rec-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  gap: 8px;
+}
+
+.slot-rec-day {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 90px;
+}
+
+.slot-rec-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.slot-rec-reason {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.slot-score-bar {
+  width: 48px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.slot-score-fill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ── Disclaimer ─────────────────────────────────────────────── */
+.ai-disclaimer {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  padding: 6px 0 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── SOAP Draft Modal ───────────────────────────────────────── */
+.soap-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.soap-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.soap-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.soap-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.soap-modal-warning {
+  font-size: 12px;
+  color: var(--warning);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.soap-modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.soap-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.soap-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.soap-input-label.ai-generated {
+  color: var(--teal);
+}
+
+.soap-textarea {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: var(--transition);
+  outline: none;
+}
+
+.soap-textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-glow);
+}
+
+.soap-textarea.free-text {
+  min-height: 100px;
+}
+
+.soap-modal-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.soap-modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.soap-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.soap-btn.primary {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  color: white;
+}
+
+.soap-btn.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.soap-btn.primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.soap-btn.secondary {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.soap-btn.secondary:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.soap-btn.danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.soap-btn.danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* Pulsing dot for loading */
+@keyframes aiPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.ai-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  animation: aiPulse 1.2s ease-in-out infinite;
+}
+
+/* ── Engagement Trend Chart ─────────────────────────────────── */
+.engagement-chart-wrap {
+  width: 100%;
+  height: 100px;
+}
+
+/* ── Empty state for AI cards ───────────────────────────────── */
+.ai-empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ai-empty svg {
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
