@@ -1,0 +1,191 @@
+/* Client Portal page CSS */
+
+.cp-error {
+  text-align: center;
+  padding: 80px 24px;
+}
+.cp-error-icon { font-size: 48px; margin-bottom: 16px; }
+.cp-error h2   { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.cp-error p    { font-size: 14px; color: var(--text-secondary); }
+
+/* Hero */
+.cp-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cp-hero-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14B8A6, #7C3AED);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.cp-hero-info { flex: 1; min-width: 0; }
+
+.cp-hero-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.cp-hero-practice {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.cp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cp-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--teal-glow);
+  color: var(--teal);
+  text-transform: capitalize;
+}
+
+.cp-tag--violet  { background: var(--violet-glow);  color: var(--violet);  }
+.cp-tag--success { background: var(--success-bg);   color: var(--success); }
+
+/* Book button */
+.cp-book-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #14B8A6, #0D9488);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.cp-book-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.35);
+}
+
+/* Info Grid */
+.cp-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .cp-info-grid { grid-template-columns: 1fr; }
+}
+
+.cp-info-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.cp-info-card--wide { grid-column: 1 / -1; }
+
+.cp-info-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.cp-info-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.cp-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cp-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cp-contact-row svg { color: var(--teal); flex-shrink: 0; }
+
+/* Trust row */
+.cp-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.cp-trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* CTA Banner */
+.cp-cta-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(20,184,166,0.1), rgba(124,58,237,0.08));
+  border: 1px solid rgba(20, 184, 166, 0.25);
+  border-radius: 20px;
+  padding: 28px 32px;
+  flex-wrap: wrap;
+}
+
+.cp-cta-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+
+.cp-cta-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}

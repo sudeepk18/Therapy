@@ -4,19 +4,26 @@ import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
 const PAGE_TITLES = {
-  '/dashboard': { label: 'Dashboard',  sub: 'Welcome back' },
-  '/clients':   { label: 'Clients',    sub: 'Manage your client list' },
-  '/leads':     { label: 'Leads',      sub: 'CRM & enquiry pipeline' },
-  '/sessions':  { label: 'Sessions',   sub: 'Appointments & scheduling' },
-  '/notes':     { label: 'Notes',      sub: 'Clinical session notes' },
-  '/payments':  { label: 'Payments',   sub: 'Revenue & transactions' },
+  '/therapist/dashboard': { label: 'Dashboard',  sub: 'Welcome back' },
+  '/therapist/clients':   { label: 'Clients',    sub: 'Manage your client list' },
+  '/therapist/leads':     { label: 'Leads',      sub: 'CRM & enquiry pipeline' },
+  '/therapist/schedule':  { label: 'Schedule',   sub: 'Appointments & scheduling' },
+  '/therapist/notes':     { label: 'Notes',      sub: 'Clinical session notes' },
+  '/therapist/payments':  { label: 'Payments',   sub: 'Revenue & transactions' },
+  '/therapist/analytics': { label: 'Analytics',  sub: 'Revenue & growth insights' },
+  '/therapist/settings':  { label: 'Settings',   sub: 'Profile, workspace & security' },
 };
+
 
 export default function Header() {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
-  const base = '/' + pathname.split('/')[1];
+  // Match /therapist/page or /page paths
+  const parts = pathname.split('/').filter(Boolean);
+  const base = parts[0] === 'therapist'
+    ? `/${parts[0]}/${parts[1] || ''}`
+    : `/${parts[0] || ''}`;
   const page = PAGE_TITLES[base] || { label: 'Unfazed', sub: '' };
 
   const initials = user?.name

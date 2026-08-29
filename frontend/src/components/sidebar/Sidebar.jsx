@@ -3,19 +3,21 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserPlus, Calendar,
   FileText, CreditCard, LogOut, ChevronRight,
-  Menu, X,
+  Menu, BarChart2, Settings,
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard'  },
-  { to: '/clients',   icon: Users,           label: 'Clients'    },
-  { to: '/leads',     icon: UserPlus,        label: 'Leads'      },
-  { to: '/sessions',  icon: Calendar,        label: 'Sessions'   },
-  { to: '/notes',     icon: FileText,        label: 'Notes'      },
-  { to: '/payments',  icon: CreditCard,      label: 'Payments'   },
+  { to: '/therapist/dashboard', icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/therapist/clients',   icon: Users,           label: 'Clients'    },
+  { to: '/therapist/leads',     icon: UserPlus,        label: 'Leads'      },
+  { to: '/therapist/schedule',  icon: Calendar,        label: 'Schedule'   },
+  { to: '/therapist/notes',     icon: FileText,        label: 'Notes'      },
+  { to: '/therapist/payments',  icon: CreditCard,      label: 'Payments'   },
+  { to: '/therapist/analytics', icon: BarChart2,       label: 'Analytics'  },
+  { to: '/therapist/settings',  icon: Settings,        label: 'Settings'   },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {

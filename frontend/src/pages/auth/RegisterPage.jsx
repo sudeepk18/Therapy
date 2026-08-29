@@ -26,7 +26,7 @@ export default function RegisterPage() {
     setBusy(false);
     if (result.success) {
       toast.success('Practice created! Welcome to Unfazed.');
-      navigate('/dashboard');
+      navigate('/therapist/dashboard');
     } else {
       toast.error(result.message);
     }

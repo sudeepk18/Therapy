@@ -1,36 +1,37 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Users } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List, Users } from 'lucide-react';
 import { clientsApi } from '../../api/clients.api';
+import ClientTable from '../../components/crm/ClientTable';
+import ClientCard from '../../components/crm/ClientCard';
 import toast from 'react-hot-toast';
 import './ClientsPage.css';
-
-const STATUS_COLORS = {
-  active:     { color: 'var(--success)', bg: 'var(--success-bg)' },
-  inactive:   { color: 'var(--text-muted)', bg: 'var(--bg-elevated)' },
-  discharged: { color: 'var(--warning)', bg: 'var(--warning-bg)' },
-  onhold:     { color: 'var(--info)',    bg: 'var(--info-bg)'    },
-};
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
   const [total,   setTotal]   = useState(0);
   const [search,  setSearch]  = useState('');
   const [status,  setStatus]  = useState('');
+  const [tag,     setTag]     = useState('');
+  const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const res = await clientsApi.list({ search, status, limit: 20 });
+      const res = await clientsApi.list({ search, status, tag, limit: 50 });
       setClients(res.data.data.clients || []);
       setTotal(res.data.data.pagination?.total || 0);
-    } catch { toast.error('Failed to load clients'); }
-    finally { setLoading(false); }
+    } catch {
+      toast.error('Failed to load clients');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchClients(); }, [search, status]);
+  useEffect(() => {
+    fetchClients();
+  }, [search, status, tag]);
 
   return (
     <div className="page">
@@ -41,11 +42,12 @@ export default function ClientsPage() {
           <input
             id="client-search"
             className="search-input"
-            placeholder="Search clients…"
+            placeholder="Search clients by name, email, or phone…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
         <div className="toolbar-filters">
           <select
             id="client-status-filter"
@@ -53,130 +55,261 @@ export default function ClientsPage() {
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="">All Status</option>
+            <option value="">All Statuses</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
+            <option value="on_hold">On Hold</option>
             <option value="discharged">Discharged</option>
+            <option value="waitlist">Waitlist</option>
           </select>
+
+          <select
+            id="client-tag-filter"
+            className="filter-select"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+          >
+            <option value="">All Risk Tags</option>
+            <option value="low_risk">Low Risk</option>
+            <option value="moderate_risk">Moderate Risk</option>
+            <option value="high_risk">High Risk</option>
+            <option value="vip">VIP</option>
+            <option value="new">New</option>
+          </select>
+
+          {/* View Toggle */}
+          <div style={{ display: 'flex', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 2 }}>
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              style={{
+                background: viewMode === 'table' ? 'var(--bg-elevated)' : 'transparent',
+                color: viewMode === 'table' ? 'var(--teal)' : 'var(--text-muted)',
+                border: 'none',
+                padding: '6px 8px',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Table View"
+            >
+              <List size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              style={{
+                background: viewMode === 'grid' ? 'var(--bg-elevated)' : 'transparent',
+                color: viewMode === 'grid' ? 'var(--teal)' : 'var(--text-muted)',
+                border: 'none',
+                padding: '6px 8px',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Grid View"
+            >
+              <LayoutGrid size={15} />
+            </button>
+          </div>
         </div>
+
+        <div style={{ flex: 1 }} />
+
         <button id="add-client-btn" className="btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={15} /> Add Client
+          <Plus size={15} /> Add New Client
         </button>
       </div>
 
-      {/* Table */}
-      <div className="table-card">
-        <div className="table-meta">
-          <p className="table-count">{total} client{total !== 1 ? 's' : ''}</p>
+      {/* Main Content Area */}
+      {viewMode === 'table' ? (
+        <div className="table-card">
+          <div className="table-meta">
+            <p className="table-count">{total} client{total !== 1 ? 's' : ''} in practice</p>
+          </div>
+          <ClientTable clients={clients} loading={loading} />
         </div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Added</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading
-                ? Array.from({ length: 6 }).map((_, i) => (
-                    <tr key={i}>
-                      {Array.from({ length: 6 }).map((__, j) => (
-                        <td key={j}><div className="skeleton" style={{ height: 14, borderRadius: 4, width: j === 0 ? 120 : 80 }} /></td>
-                      ))}
-                    </tr>
-                  ))
-                : clients.length === 0
-                ? (
-                  <tr>
-                    <td colSpan={6}>
-                      <div className="table-empty">
-                        <Users size={32} />
-                        <p>No clients found</p>
-                      </div>
-                    </td>
-                  </tr>
-                )
-                : clients.map((c) => {
-                    const st = STATUS_COLORS[c.status] || STATUS_COLORS.active;
-                    const initials = c.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-                    return (
-                      <tr key={c._id} className="table-row-hover">
-                        <td>
-                          <div className="client-name-cell">
-                            <div className="table-avatar">{initials}</div>
-                            <span>{c.name}</span>
-                          </div>
-                        </td>
-                        <td className="text-secondary">{c.email}</td>
-                        <td className="text-secondary">{c.phone || '—'}</td>
-                        <td>
-                          <span className="status-badge" style={{ color: st.color, background: st.bg }}>
-                            {c.status}
-                          </span>
-                        </td>
-                        <td className="text-secondary">
-                          {new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td>
-                          <Link to={`/clients/${c._id}`} className="table-action">View</Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-            </tbody>
-          </table>
+      ) : (
+        <div>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 14 }}>
+            Showing {clients.length} client{clients.length !== 1 ? 's' : ''}
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 16,
+          }}>
+            {clients.map((c) => (
+              <ClientCard key={c._id} client={c} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Add Client Modal */}
-      {showModal && <AddClientModal onClose={() => setShowModal(false)} onSuccess={() => { setShowModal(false); fetchClients(); }} />}
+      {/* Modal */}
+      {showModal && (
+        <AddClientModal
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            setShowModal(false);
+            fetchClients();
+          }}
+        />
+      )}
     </div>
   );
 }
 
 function AddClientModal({ onClose, onSuccess }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', dateOfBirth: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    gender: 'Female',
+    tag: 'new',
+    status: 'active',
+    presentingConcerns: '',
+    goals: '',
+  });
   const [busy, setBusy] = useState(false);
+
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
-      await clientsApi.create(form);
-      toast.success('Client added!');
+      await clientsApi.create({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        gender: form.gender,
+        tag: form.tag,
+        status: form.status,
+        intake: {
+          presentingConcerns: form.presentingConcerns,
+          goals: form.goals,
+        },
+      });
+      toast.success('Client added successfully!');
       onSuccess();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add client');
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">Add New Client</h3>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
+        <h3 className="modal-title">Onboard New Client</h3>
         <form className="modal-form" onSubmit={handleSubmit}>
-          <label>Full Name
-            <input name="name" className="modal-input" placeholder="Jane Smith" value={form.name} onChange={handleChange} required />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <label>
+              Full Name
+              <input
+                name="name"
+                className="modal-input"
+                placeholder="Jane Doe"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </label>
+            <label>
+              Email Address
+              <input
+                name="email"
+                type="email"
+                className="modal-input"
+                placeholder="jane@example.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+            </label>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <label>
+              Phone Number
+              <input
+                name="phone"
+                type="tel"
+                className="modal-input"
+                placeholder="+91 98765 43210"
+                value={form.phone}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              Gender Identity
+              <select name="gender" className="modal-input" value={form.gender} onChange={handleChange}>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Non-Binary">Non-Binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <label>
+              Clinical Tag
+              <select name="tag" className="modal-input" value={form.tag} onChange={handleChange}>
+                <option value="new">New Client</option>
+                <option value="low_risk">Low Risk</option>
+                <option value="moderate_risk">Moderate Risk</option>
+                <option value="high_risk">High Risk</option>
+                <option value="vip">VIP</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            <label>
+              Care Status
+              <select name="status" className="modal-input" value={form.status} onChange={handleChange}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="on_hold">On Hold</option>
+                <option value="waitlist">Waitlist</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Presenting Concerns / Clinical Focus
+            <textarea
+              name="presentingConcerns"
+              className="modal-input"
+              rows={2}
+              placeholder="e.g. Work stress, generalized anxiety, life transition..."
+              value={form.presentingConcerns}
+              onChange={handleChange}
+            />
           </label>
-          <label>Email
-            <input name="email" type="email" className="modal-input" placeholder="jane@example.com" value={form.email} onChange={handleChange} required />
+
+          <label>
+            Therapy Goals
+            <textarea
+              name="goals"
+              className="modal-input"
+              rows={2}
+              placeholder="Client's self-stated goals..."
+              value={form.goals}
+              onChange={handleChange}
+            />
           </label>
-          <label>Phone
-            <input name="phone" className="modal-input" placeholder="+91 9999 999999" value={form.phone} onChange={handleChange} />
-          </label>
-          <label>Date of Birth
-            <input name="dateOfBirth" type="date" className="modal-input" value={form.dateOfBirth} onChange={handleChange} />
-          </label>
+
           <div className="modal-footer">
-            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
             <button type="submit" className="btn-primary" disabled={busy}>
-              {busy ? 'Adding…' : 'Add Client'}
+              {busy ? 'Onboarding…' : 'Add Client'}
             </button>
           </div>
         </form>

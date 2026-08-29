@@ -22,7 +22,7 @@ export default function LoginPage() {
     setBusy(false);
     if (result.success) {
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      navigate('/therapist/dashboard');
     } else {
       toast.error(result.message);
     }

@@ -1,0 +1,65 @@
+/* Payments Page CSS */
+
+.revenue-summary-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 768px) {
+  .revenue-summary-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rev-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rev-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.rev-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rev-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.6px;
+  line-height: 1;
+}
+
+.rev-card-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.payment-client-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.payment-amount {
+  font-weight: 700;
+  color: var(--teal);
+}

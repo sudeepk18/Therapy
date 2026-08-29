@@ -1,0 +1,151 @@
+/* ClientLoginPage.css — Styles for the client-branded login page */
+
+.cl-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0f13;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background glow */
+.cl-page::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 99, 255, 0.08) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  pointer-events: none;
+}
+
+.cl-accent-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 100;
+  opacity: 0.9;
+}
+
+.cl-card {
+  background: #18181f;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s ease;
+}
+
+.cl-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.cl-brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cl-brand-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin: 0 0 2px 0;
+}
+
+.cl-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f1f3;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cl-subheading {
+  font-size: 13.5px;
+  color: #6b7280;
+  margin: 14px 0 24px;
+  line-height: 1.5;
+}
+
+.cl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cl-btn {
+  width: 100%;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.cl-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.cl-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cl-footer-note {
+  margin-top: 20px;
+  font-size: 12.5px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.cl-footer-note span {
+  color: #9ca3af;
+}
+
+.cl-back-link {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.cl-back-link:hover {
+  color: #a78bfa;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -4,10 +4,11 @@ import { authApi } from '../api/auth.api';
 const AuthContext = createContext(null);
 
 const initialState = {
-  user:    JSON.parse(localStorage.getItem('unfazed_user') || 'null'),
-  token:   localStorage.getItem('unfazed_token') || null,
-  loading: true,
-  error:   null,
+  user:     JSON.parse(localStorage.getItem('unfazed_user') || 'null'),
+  token:    localStorage.getItem('unfazed_token') || null,
+  userRole: localStorage.getItem('unfazed_role') || null,
+  loading:  true,
+  error:    null,
 };
 
 function authReducer(state, action) {
@@ -16,11 +17,20 @@ function authReducer(state, action) {
     case 'LOGIN_SUCCESS':
       localStorage.setItem('unfazed_token', action.payload.token);
       localStorage.setItem('unfazed_user', JSON.stringify(action.payload.user));
-      return { ...state, user: action.payload.user, token: action.payload.token, loading: false, error: null };
+      localStorage.setItem('unfazed_role', action.payload.role || 'therapist');
+      return {
+        ...state,
+        user:     action.payload.user,
+        token:    action.payload.token,
+        userRole: action.payload.role || 'therapist',
+        loading:  false,
+        error:    null,
+      };
     case 'LOGOUT':
       localStorage.removeItem('unfazed_token');
       localStorage.removeItem('unfazed_user');
-      return { ...state, user: null, token: null, loading: false };
+      localStorage.removeItem('unfazed_role');
+      return { ...state, user: null, token: null, userRole: null, loading: false };
     case 'SET_ERROR': return { ...state, error: action.payload, loading: false };
     case 'UPDATE_USER': {
       const updated = { ...state.user, ...action.payload };
@@ -45,7 +55,11 @@ export function AuthProvider({ children }) {
         const res = await authApi.me();
         dispatch({
           type: 'LOGIN_SUCCESS',
-          payload: { user: res.data.data.user, token: state.token },
+          payload: {
+            user:  res.data.data.user,
+            token: state.token,
+            role:  res.data.data.role || state.userRole || 'therapist',
+          },
         });
       } catch {
         dispatch({ type: 'LOGOUT' });
@@ -55,12 +69,28 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Login for therapists (existing flow — unchanged) */
   const login = async (email, password) => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const res = await authApi.login({ email, password, role: 'therapist' });
       const { user, token } = res.data.data;
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token, role: 'therapist' } });
+      return { success: true };
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Login failed';
+      dispatch({ type: 'SET_ERROR', payload: msg });
+      return { success: false, message: msg };
+    }
+  };
+
+  /** Login for clients (new — role: 'client') */
+  const clientLogin = async (email, password) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    try {
+      const res = await authApi.clientLogin({ email, password });
+      const { user, token } = res.data.data;
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token, role: 'client' } });
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed';
@@ -74,7 +104,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await authApi.register(data);
       const { therapist, token } = res.data.data;
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: therapist, token } });
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: therapist, token, role: 'therapist' } });
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed';
@@ -89,7 +119,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, dispatch }}>
+    <AuthContext.Provider value={{ ...state, login, clientLogin, register, logout, dispatch }}>
       {children}
     </AuthContext.Provider>
   );

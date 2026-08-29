@@ -15,15 +15,29 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — auto-redirect on 401
+// Response interceptor — auto-redirect on 401 based on user role
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('unfazed_token');
       localStorage.removeItem('unfazed_user');
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
+
+      // Redirect to the correct login page based on user role
+      const storedUser = localStorage.getItem('unfazed_user');
+      const storedRole = localStorage.getItem('unfazed_role');
+
+      if (storedRole === 'client') {
+        // Try to extract slug from the current URL: /client/:slug/*
+        const match = window.location.pathname.match(/^\/client\/([^/]+)/);
+        const slug = match ? match[1] : null;
+        if (slug && !window.location.pathname.includes('/login')) {
+          window.location.href = `/client/${slug}/login`;
+        }
+      } else {
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
