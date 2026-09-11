@@ -13,6 +13,7 @@ router.post('/register-therapist', authController.registerTherapist);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.get('/check-slug/:slug', authController.checkSlug);
+router.post('/set-client-password', authController.setClientPassword);
 
 // Protected routes (Requires valid JWT token)
 router.use(protect);
@@ -23,5 +24,6 @@ router.post('/change-password', authController.changePassword);
 // Therapist-only profile management routes
 router.patch('/profile', restrictTo('therapist'), authController.updateProfile);
 router.patch('/branding', restrictTo('therapist'), authController.updateBranding);
+router.post('/invite-client/:clientId', restrictTo('therapist'), authController.inviteClient);
 
 module.exports = router;

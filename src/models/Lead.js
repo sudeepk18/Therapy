@@ -139,6 +139,17 @@ const LeadSchema = new Schema(
       default: 'medium',
     },
 
+    // ── Requested Booking Details (from public booking page) ─────────────────
+    bookingDetails: {
+      scheduledAt:     { type: Date },
+      durationMinutes: { type: Number, default: 50 },
+      sessionType:     { type: String, default: 'individual' },
+      medium:          { type: String, default: 'video' },
+      notes:           { type: String, trim: true },
+      status:          { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+      sessionId:       { type: Schema.Types.ObjectId, ref: 'Session', default: null },
+    },
+
     // ── Follow-up Log ────────────────────────────────────────────────────────
 
     // Chronological log of all follow-up activities with this lead

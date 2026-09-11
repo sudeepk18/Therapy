@@ -4,7 +4,7 @@
  */
 
 const ApiError = require('../utils/ApiError');
-const { Lead, Client } = require('../models');
+const { Lead, Client, Session } = require('../models');
 
 /**
  * Create a new Lead (from booking page enquiry form or therapist entry)
@@ -166,13 +166,148 @@ const convertLeadToClient = async (therapistId, leadId, clientOverrideData = {})
     });
   }
 
+  // If the lead has requested booking details, also create the scheduled session
+  let session = null;
+  if (lead.bookingDetails && lead.bookingDetails.scheduledAt && lead.bookingDetails.status !== 'accepted') {
+    const scheduledAt = new Date(lead.bookingDetails.scheduledAt);
+    const durationMinutes = Number(lead.bookingDetails.durationMinutes) || 50;
+    const scheduledEndAt = new Date(scheduledAt.getTime() + durationMinutes * 60000);
+
+    const conflict = await Session.findOne({
+      therapistId,
+      status: { $in: ['scheduled', 'in_progress'] },
+      scheduledAt: { $lt: scheduledEndAt },
+      scheduledEndAt: { $gt: scheduledAt },
+    });
+
+    if (!conflict) {
+      session = await Session.create({
+        therapistId,
+        clientId: client._id,
+        scheduledAt,
+        scheduledEndAt,
+        durationMinutes,
+        sessionType: lead.bookingDetails.sessionType || 'individual',
+        medium: lead.bookingDetails.medium || 'video',
+        status: 'scheduled',
+        notes: lead.bookingDetails.notes || lead.enquiryMessage || '',
+        isClientConfirmed: true,
+        clientConfirmedAt: new Date(),
+      });
+      lead.bookingDetails.status = 'accepted';
+      lead.bookingDetails.sessionId = session._id;
+    }
+  }
+
   // Mark lead as converted
   lead.status = 'converted';
   lead.clientId = client._id;
   lead.convertedAt = new Date();
   await lead.save();
 
-  return { lead, client };
+  return { lead, client, session };
+};
+
+/**
+ * Accept a booking appointment request from a Lead:
+ * 1. Finds or creates the Client record
+ * 2. Checks for scheduling conflicts
+ * 3. Creates the scheduled Session (status: 'scheduled') -> automatically closes slot in calendar!
+ * 4. Marks Lead as converted and accepted
+ */
+const acceptAppointment = async (therapistId, leadId) => {
+  const lead = await Lead.findOne({ _id: leadId, therapistId });
+  if (!lead) {
+    throw new ApiError(404, 'Lead not found or access denied.');
+  }
+
+  if (!lead.bookingDetails || !lead.bookingDetails.scheduledAt) {
+    throw new ApiError(400, 'This lead does not have a requested appointment slot to accept.');
+  }
+
+  if (lead.bookingDetails.status === 'accepted' && lead.bookingDetails.sessionId) {
+    throw new ApiError(400, 'This appointment has already been accepted and scheduled.');
+  }
+
+  // 1. Find or create Client
+  let client = await Client.findOne({ therapistId, email: lead.email });
+  if (!client) {
+    client = await Client.create({
+      therapistId,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      preferredSessionMedium: lead.bookingDetails.medium || lead.preferredMedium || 'video',
+      status: 'active',
+      onboardedAt: new Date(),
+      intake: {
+        presentingConcerns: lead.bookingDetails.notes || lead.enquiryMessage || '',
+        referralSource: lead.referralSource || 'booking_page',
+      },
+      internalNotes: `Converted from Lead via appointment acceptance on ${new Date().toISOString().split('T')[0]}.`,
+    });
+  }
+
+  // 2. Conflict check
+  const scheduledAt = new Date(lead.bookingDetails.scheduledAt);
+  const durationMinutes = Number(lead.bookingDetails.durationMinutes) || 50;
+  const scheduledEndAt = new Date(scheduledAt.getTime() + durationMinutes * 60000);
+
+  const conflict = await Session.findOne({
+    therapistId,
+    status: { $in: ['scheduled', 'in_progress'] },
+    scheduledAt: { $lt: scheduledEndAt },
+    scheduledEndAt: { $gt: scheduledAt },
+  });
+
+  if (conflict) {
+    throw new ApiError(409, 'This time slot is already booked by another scheduled session.');
+  }
+
+  // 3. Create Session with status: 'scheduled' (this closes the slot!)
+  const session = await Session.create({
+    therapistId,
+    clientId: client._id,
+    scheduledAt,
+    scheduledEndAt,
+    durationMinutes,
+    sessionType: lead.bookingDetails.sessionType || 'individual',
+    medium: lead.bookingDetails.medium || 'video',
+    status: 'scheduled',
+    notes: lead.bookingDetails.notes || lead.enquiryMessage || '',
+    isClientConfirmed: true,
+    clientConfirmedAt: new Date(),
+  });
+
+  // 4. Update Lead
+  lead.status = 'converted';
+  lead.clientId = client._id;
+  lead.convertedAt = new Date();
+  lead.bookingDetails.status = 'accepted';
+  lead.bookingDetails.sessionId = session._id;
+  await lead.save();
+
+  return { lead, client, session };
+};
+
+/**
+ * Reject / decline an appointment request
+ */
+const rejectAppointment = async (therapistId, leadId, reason) => {
+  const lead = await Lead.findOne({ _id: leadId, therapistId });
+  if (!lead) {
+    throw new ApiError(404, 'Lead not found or access denied.');
+  }
+
+  if (lead.bookingDetails) {
+    lead.bookingDetails.status = 'rejected';
+  }
+  lead.status = 'lost';
+  lead.lostAt = new Date();
+  lead.lostReason = reason || 'Declined by therapist';
+  await lead.save();
+
+  return lead;
 };
 
 /**
@@ -200,5 +335,7 @@ module.exports = {
   getLeadById,
   addFollowUp,
   convertLeadToClient,
+  acceptAppointment,
+  rejectAppointment,
   updateLead,
 };

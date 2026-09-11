@@ -8,7 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
 const authService = require('../services/auth.service');
-const { Therapist } = require('../models');
+const { Therapist, Client } = require('../models');
 
 // Cookie options helper for JWT authentication
 const getCookieOptions = () => ({
@@ -93,8 +93,12 @@ const logout = asyncHandler(async (req, res) => {
  * @access  Private (Therapist or Client)
  */
 const getMe = asyncHandler(async (req, res) => {
+  let user = req.user;
+  if (req.userRole === 'client') {
+    user = await Client.findById(req.user._id).populate('therapistId', 'name practiceName brandColor slug');
+  }
   res.status(200).json(
-    new ApiResponse(200, { user: req.user, role: req.userRole }, 'Current user profile fetched')
+    new ApiResponse(200, { user, role: req.userRole }, 'Current user profile fetched')
   );
 });
 
@@ -227,6 +231,48 @@ const changePassword = asyncHandler(async (req, res) => {
   );
 });
 
+/**
+ * @route   POST /api/v1/auth/invite-client/:clientId
+ * @desc    Generate a portal invite link for a client (therapist-only)
+ * @access  Private (Therapist)
+ */
+const inviteClient = asyncHandler(async (req, res) => {
+  const therapist = req.user;
+  const { clientId } = req.params;
+
+  const result = await authService.inviteClient(clientId, therapist._id, therapist.slug);
+
+  res.status(200).json(
+    new ApiResponse(200, { inviteUrl: result.inviteUrl, client: result.client }, 'Portal invite link generated successfully')
+  );
+});
+
+/**
+ * @route   POST /api/v1/auth/set-client-password
+ * @desc    Validate invite token and set client's portal password
+ * @access  Public
+ */
+const setClientPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    throw new ApiError(400, 'Invite token and new password are required');
+  }
+
+  if (newPassword.length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters long');
+  }
+
+  const result = await authService.setClientPassword(token, newPassword);
+
+  // Log the client in immediately after setting password
+  res.cookie('token', result.token, getCookieOptions());
+
+  res.status(200).json(
+    new ApiResponse(200, result, 'Password set successfully. You are now logged in.')
+  );
+});
+
 module.exports = {
   registerTherapist,
   login,
@@ -236,4 +282,6 @@ module.exports = {
   updateProfile,
   updateBranding,
   changePassword,
+  inviteClient,
+  setClientPassword,
 };

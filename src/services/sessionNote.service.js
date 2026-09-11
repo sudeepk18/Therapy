@@ -244,7 +244,7 @@ const getSharedNotesForClient = async (clientId, query = {}) => {
   const [notes, total] = await Promise.all([
     SessionNote.find(filter)
       .populate('sessionId', 'scheduledAt sessionNumber medium')
-      .select('-signatureHash -riskAssessment') // Hide sensitive fields from client view
+      .select('-signatureHash -riskAssessment -aiSentiment') // Hide sensitive internal clinical fields from client view
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)

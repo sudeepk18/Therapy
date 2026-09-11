@@ -76,10 +76,43 @@ const getAvailableSlots = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { therapistId, date, durationMinutes, slots }, 'Available slots computed'));
 });
 
+/**
+ * @route   GET /api/v1/availability/public/:slug
+ * @desc    Get available free booking time slots for a therapist by workspace slug
+ * @access  Public
+ */
+const getPublicSlotsBySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const { date, duration, timezone } = req.query;
+
+  const { Therapist } = require('../models');
+  const therapist = await Therapist.findOne({ slug, isActive: true });
+  if (!therapist) {
+    throw new ApiError(404, 'Therapist not found for this workspace slug');
+  }
+
+  const queryDate = date || new Date().toISOString().split('T')[0];
+  const durationMinutes = duration ? parseInt(duration, 10) : 50;
+
+  const slots = await availabilityService.getAvailableSlots(therapist._id, queryDate, durationMinutes);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      therapistId: therapist._id,
+      slug: therapist.slug,
+      date: queryDate,
+      durationMinutes,
+      clientTimezone: timezone || 'Asia/Kolkata',
+      slots,
+    }, 'Available slots computed for therapist public portal')
+  );
+});
+
 module.exports = {
   setWeeklyAvailability,
   getWeeklyAvailability,
   setOverride,
   deleteOverride,
   getAvailableSlots,
+  getPublicSlotsBySlug,
 };

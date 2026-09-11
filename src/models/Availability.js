@@ -120,14 +120,13 @@ AvailabilitySchema.index({ therapistId: 1, dayOfWeek: 1 });            // Recurr
 AvailabilitySchema.index({ therapistId: 1, isOverride: 1, overrideDate: 1 }); // Override lookup
 
 // ─── Validation: dayOfWeek XOR overrideDate ───────────────────────────────────
-AvailabilitySchema.pre('save', function (next) {
+AvailabilitySchema.pre('save', function () {
   if (!this.isOverride && this.dayOfWeek === undefined) {
-    return next(new Error('dayOfWeek is required for recurring availability rules'));
+    throw new Error('dayOfWeek is required for recurring availability rules');
   }
   if (this.isOverride && !this.overrideDate) {
-    return next(new Error('overrideDate is required for override availability documents'));
+    throw new Error('overrideDate is required for override availability documents');
   }
-  next();
 });
 
 // ─── Export ───────────────────────────────────────────────────────────────────

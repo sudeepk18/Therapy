@@ -8,7 +8,12 @@ const router = express.Router();
 const sessionController = require('../controllers/session.controller');
 const { protect, restrictTo } = require('../middleware/auth.middleware');
 
-// All session routes require authentication
+// ── Public route (no auth) ────────────────────────────────────────────────────
+// Client submits a booking enquiry from the public portal — captured as a Lead
+router.post('/public/book/:slug', sessionController.publicBookSession);
+
+// ── Protected routes ──────────────────────────────────────────────────────────
+// All session routes below require authentication
 router.use(protect);
 
 router
@@ -21,3 +26,4 @@ router.patch('/:id/status', restrictTo('therapist'), sessionController.updateSes
 router.post('/:id/cancel', sessionController.cancelSession);
 
 module.exports = router;
+

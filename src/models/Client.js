@@ -20,6 +20,27 @@ const EmergencyContactSchema = new Schema(
   { _id: false }
 );
 
+// ─── Sub-schema: Digital Consent ──────────────────────────────────────────────
+const ConsentSchema = new Schema(
+  {
+    // Whether digital therapy consent terms were accepted
+    isConsentAccepted: { type: Boolean, default: false },
+
+    // Timestamp when consent was digitally submitted
+    consentAcceptedAt: { type: Date },
+
+    // Full name typed as digital signature
+    consentSignatureName: { type: String, trim: true },
+
+    // Version of the consent document agreed to
+    consentVersion: { type: String, default: '1.0' },
+
+    // IP address recorded during digital signature
+    consentIp: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
 // ─── Sub-schema: Intake Information ──────────────────────────────────────────
 const IntakeSchema = new Schema(
   {
@@ -98,6 +119,12 @@ const ClientSchema = new Schema(
     // Email-verified flag for portal login
     isEmailVerified: { type: Boolean, default: false },
 
+    // Hashed invite token for the set-password / portal activation link
+    portalInviteToken: { type: String, select: false },
+
+    // Expiry timestamp for the invite token (72 hours from issue)
+    portalInviteExpires: { type: Date, select: false },
+
     // ── Care Status ──────────────────────────────────────────────────────────
 
     // Current stage in the client's care journey
@@ -122,6 +149,9 @@ const ClientSchema = new Schema(
 
     // ── Intake ────────────────────────────────────────────────────────────────
     intake: { type: IntakeSchema, default: () => ({}) },
+
+    // ── Digital Consent ───────────────────────────────────────────────────────
+    consent: { type: ConsentSchema, default: () => ({}) },
 
     // ── Emergency Contact ────────────────────────────────────────────────────
     emergencyContact: { type: EmergencyContactSchema, default: () => ({}) },

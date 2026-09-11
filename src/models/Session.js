@@ -10,6 +10,32 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// ─── Sub-schema: AI No-Show Risk ─────────────────────────────────────────────
+// Populated by the Node.js AI controller after calling the Python AI service.
+// THERAPIST-ONLY: This data must NEVER be exposed to clients.
+const AIRiskSchema = new Schema(
+  {
+    // Probability that the client will not attend (0.0 – 1.0)
+    noShowProbability: { type: Number, min: 0, max: 1 },
+
+    // Risk classification
+    noShowRiskLevel: {
+      type: String,
+      enum: ['LOW', 'MEDIUM', 'HIGH'],
+    },
+
+    // Version of the AI model that produced this prediction
+    modelVersion: { type: String, trim: true },
+
+    // When the prediction was computed
+    predictedAt: { type: Date },
+
+    // True when client has fewer than 3 prior sessions (low-confidence prediction)
+    isLowConfidence: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 // ─── Sub-schema: Video Call Metadata ─────────────────────────────────────────
 const VideoCallSchema = new Schema(
   {
@@ -204,6 +230,10 @@ const SessionSchema = new Schema(
 
     // Free-text pre-session notes visible only to the therapist
     preSessionNotes: { type: String, maxlength: 1000 },
+
+    // ── AI Intelligence (Therapist-only) ─────────────────────────────────────
+    // Populated asynchronously by the AI service — never exposed to clients.
+    aiRisk: { type: AIRiskSchema, default: null },
   },
   {
     timestamps: true,
@@ -222,13 +252,12 @@ SessionSchema.index({ therapistId: 1, scheduledAt: 1, scheduledEndAt: 1 }); // O
 // ─── Pre-save Middleware ─────────────────────────────────────────────────────
 
 // Auto-compute scheduledEndAt from scheduledAt + durationMinutes
-SessionSchema.pre('save', function (next) {
+SessionSchema.pre('save', function () {
   if (this.scheduledAt && this.durationMinutes) {
     this.scheduledEndAt = new Date(
       this.scheduledAt.getTime() + this.durationMinutes * 60 * 1000
     );
   }
-  next();
 });
 
 // ─── Virtuals ────────────────────────────────────────────────────────────────

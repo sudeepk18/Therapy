@@ -28,5 +28,7 @@ router
 
 router.post('/:id/follow-up', leadController.addFollowUp);
 router.post('/:id/convert', checkTierLimit('maxClients'), leadController.convertLeadToClient);
+router.post('/:id/accept', checkTierLimit('maxClients'), leadController.acceptAppointment);
+router.post('/:id/reject', leadController.rejectAppointment);
 
 module.exports = router;

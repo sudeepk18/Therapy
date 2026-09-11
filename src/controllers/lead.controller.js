@@ -81,6 +81,29 @@ const convertLeadToClient = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route   POST /api/v1/leads/:id/accept
+ * @desc    Doctor accepts an appointment request from lead:
+ *          converts to Client, creates scheduled Session, and closes the slot
+ * @access  Private (Therapist)
+ */
+const acceptAppointment = asyncHandler(async (req, res) => {
+  const result = await leadService.acceptAppointment(req.user._id, req.params.id);
+  res.status(200).json(
+    new ApiResponse(200, result, 'Appointment accepted and added to schedule! Time slot is now closed.')
+  );
+});
+
+/**
+ * @route   POST /api/v1/leads/:id/reject
+ * @desc    Doctor declines an appointment request from lead
+ * @access  Private (Therapist)
+ */
+const rejectAppointment = asyncHandler(async (req, res) => {
+  const result = await leadService.rejectAppointment(req.user._id, req.params.id, req.body.reason);
+  res.status(200).json(new ApiResponse(200, result, 'Appointment request declined'));
+});
+
+/**
  * @route   PATCH /api/v1/leads/:id
  * @desc    Update lead status or details
  * @access  Private (Therapist)
@@ -96,5 +119,7 @@ module.exports = {
   getLeadById,
   addFollowUp,
   convertLeadToClient,
+  acceptAppointment,
+  rejectAppointment,
   updateLead,
 };

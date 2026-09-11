@@ -36,11 +36,48 @@ const setWeeklyAvailability = async (therapistId, weeklySchedule) => {
   return updatedRules;
 };
 
+const DEFAULT_WEEKLY_SCHEDULE = [
+  { dayOfWeek: 1, isDayAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }] },
+  { dayOfWeek: 2, isDayAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }] },
+  { dayOfWeek: 3, isDayAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }] },
+  { dayOfWeek: 4, isDayAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }] },
+  { dayOfWeek: 5, isDayAvailable: true, slots: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }] },
+  { dayOfWeek: 6, isDayAvailable: true, slots: [{ startTime: '10:00', endTime: '16:00', isAvailable: true }] },
+  { dayOfWeek: 0, isDayAvailable: false, slots: [] },
+];
+
+/**
+ * Seed default weekly working hours for a therapist (does not overwrite existing configured days)
+ */
+const seedDefaultAvailability = async (therapistId, timezone = 'Asia/Kolkata') => {
+  for (const day of DEFAULT_WEEKLY_SCHEDULE) {
+    await Availability.findOneAndUpdate(
+      { therapistId, isOverride: false, dayOfWeek: day.dayOfWeek },
+      {
+        $setOnInsert: {
+          therapistId,
+          isOverride: false,
+          dayOfWeek: day.dayOfWeek,
+          isDayAvailable: day.isDayAvailable,
+          slots: day.slots,
+          bufferBetweenSessionsMinutes: 15,
+          timezone,
+        },
+      },
+      { upsert: true, returnDocument: 'after' }
+    );
+  }
+};
+
 /**
  * Get therapist's weekly recurring availability rules
  */
 const getWeeklyAvailability = async (therapistId) => {
-  const rules = await Availability.find({ therapistId, isOverride: false }).sort({ dayOfWeek: 1 });
+  let rules = await Availability.find({ therapistId, isOverride: false }).sort({ dayOfWeek: 1 });
+  if (!rules || rules.length === 0) {
+    await seedDefaultAvailability(therapistId);
+    rules = await Availability.find({ therapistId, isOverride: false }).sort({ dayOfWeek: 1 });
+  }
   return rules;
 };
 
@@ -82,6 +119,27 @@ const deleteOverride = async (therapistId, overrideId) => {
 };
 
 /**
+ * Get the UTC offset in minutes for a given IANA timezone on a specific date.
+ * Positive = ahead of UTC (e.g. Asia/Kolkata → +330).
+ * @param {string} timezone - IANA timezone (e.g. 'Asia/Kolkata')
+ * @param {Date} date - The date to compute offset for (handles DST)
+ * @returns {number} Offset in minutes from UTC
+ */
+const getTimezoneOffsetMinutes = (timezone, date) => {
+  try {
+    // Format the date in the target timezone and in UTC, then compute the difference
+    const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
+    const tzStr = date.toLocaleString('en-US', { timeZone: timezone });
+    const utcDate = new Date(utcStr);
+    const tzDate = new Date(tzStr);
+    return Math.round((tzDate - utcDate) / 60000);
+  } catch {
+    // Fallback: Asia/Kolkata = +330 minutes
+    return 330;
+  }
+};
+
+/**
  * CORE SCHEDULING ALGORITHM: Calculate available free time slots for a given date
  * @param {string} therapistId 
  * @param {string} dateStr - YYYY-MM-DD
@@ -115,6 +173,16 @@ const getAvailableSlots = async (therapistId, dateStr, sessionDurationMinutes = 
       isOverride: false,
       dayOfWeek,
     });
+
+    // If therapist has no availability rule for this day, seed defaults
+    if (!schedule) {
+      await seedDefaultAvailability(therapistId, therapist.timezone || 'Asia/Kolkata');
+      schedule = await Availability.findOne({
+        therapistId,
+        isOverride: false,
+        dayOfWeek,
+      });
+    }
   }
 
   // If therapist is not available on this day or no slots defined
@@ -122,15 +190,22 @@ const getAvailableSlots = async (therapistId, dateStr, sessionDurationMinutes = 
     return [];
   }
 
-  // 3. Query existing booked sessions for that day
-  const startOfDay = new Date(targetDate);
-  const endOfDay = new Date(targetDate);
-  endOfDay.setUTCHours(23, 59, 59, 999);
+  // Compute timezone offset: working hours are in the therapist's local timezone
+  const therapistTimezone = schedule.timezone || 'Asia/Kolkata';
+  const tzOffsetMinutes = getTimezoneOffsetMinutes(therapistTimezone, targetDate);
+
+  // 3. Query existing booked sessions for that day (expand range to cover timezone shift)
+  // Since working hours are in local time, the UTC window can start before/after midnight UTC
+  const startOfDayUTC = new Date(targetDate);
+  startOfDayUTC.setUTCMinutes(startOfDayUTC.getUTCMinutes() - tzOffsetMinutes);
+  const endOfDayUTC = new Date(targetDate);
+  endOfDayUTC.setUTCHours(23, 59, 59, 999);
+  endOfDayUTC.setUTCMinutes(endOfDayUTC.getUTCMinutes() - tzOffsetMinutes);
 
   const existingSessions = await Session.find({
     therapistId,
     status: { $in: ['scheduled', 'in_progress'] },
-    scheduledAt: { $gte: startOfDay, $lte: endOfDay },
+    scheduledAt: { $gte: startOfDayUTC, $lte: endOfDayUTC },
   }).select('scheduledAt scheduledEndAt durationMinutes');
 
   const bufferMinutes = schedule.bufferBetweenSessionsMinutes || 15;
@@ -161,12 +236,16 @@ const getAvailableSlots = async (therapistId, dateStr, sessionDurationMinutes = 
     while (slotStart + sessionDurationMinutes <= windowEnd) {
       const slotEnd = slotStart + sessionDurationMinutes;
 
-      // Convert slotStart to UTC Date object for overlap check against existing sessions
+      // Convert local-timezone minutes to UTC by subtracting the timezone offset
+      const slotStartUTCMinutes = slotStart - tzOffsetMinutes;
+      const slotEndUTCMinutes = slotEnd - tzOffsetMinutes;
+
+      // Build UTC Date objects from the local-to-UTC converted minutes
       const slotStartDate = new Date(targetDate);
-      slotStartDate.setUTCHours(Math.floor(slotStart / 60), slotStart % 60, 0, 0);
+      slotStartDate.setUTCMinutes(slotStartDate.getUTCMinutes() + slotStartUTCMinutes);
 
       const slotEndDate = new Date(targetDate);
-      slotEndDate.setUTCHours(Math.floor(slotEnd / 60), slotEnd % 60, 0, 0);
+      slotEndDate.setUTCMinutes(slotEndDate.getUTCMinutes() + slotEndUTCMinutes);
 
       // Check if candidate slot overlaps with any booked session
       const isOverlapping = existingSessions.some((session) => {
@@ -201,4 +280,5 @@ module.exports = {
   setOverride,
   deleteOverride,
   getAvailableSlots,
+  seedDefaultAvailability,
 };

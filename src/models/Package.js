@@ -129,14 +129,11 @@ const PackageSchema = new Schema(
 PackageSchema.index({ therapistId: 1, isActive: 1 });   // Active packages per therapist
 PackageSchema.index({ therapistId: 1, isPublic: 1 });   // Public booking page packages
 
-// ─── Pre-save Middleware ─────────────────────────────────────────────────────
-
 // Auto-compute pricePerSession whenever price or totalSessions changes
-PackageSchema.pre('save', function (next) {
+PackageSchema.pre('save', function () {
   if ((this.isModified('price') || this.isModified('totalSessions')) && this.totalSessions > 0) {
     this.pricePerSession = Math.round(this.price / this.totalSessions);
   }
-  next();
 });
 
 // ─── Export ───────────────────────────────────────────────────────────────────

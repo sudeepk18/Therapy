@@ -55,6 +55,10 @@ const tiers = [
       prioritySupport: false,
       dedicatedAccountManager: false,
       complianceDocs: false,
+      aiNoShowPrediction: false,
+      aiSentimentAnalysis: false,
+      aiSmartScheduling: false,
+      aiRevenueForecast: false,
     },
     pricing: {
       monthlyPrice: 0,
@@ -102,6 +106,10 @@ const tiers = [
       prioritySupport: false,
       dedicatedAccountManager: false,
       complianceDocs: false,
+      aiNoShowPrediction: false,
+      aiSentimentAnalysis: false,
+      aiSmartScheduling: false,
+      aiRevenueForecast: false,
     },
     pricing: {
       monthlyPrice: 99900, // ₹999 / month in paise
@@ -149,6 +157,10 @@ const tiers = [
       prioritySupport: true,
       dedicatedAccountManager: false,
       complianceDocs: true,
+      aiNoShowPrediction: true,
+      aiSentimentAnalysis: true,
+      aiSmartScheduling: true,
+      aiRevenueForecast: true,
     },
     pricing: {
       monthlyPrice: 249900, // ₹2,499 / month in paise
@@ -196,6 +208,10 @@ const tiers = [
       prioritySupport: true,
       dedicatedAccountManager: true,
       complianceDocs: true,
+      aiNoShowPrediction: true,
+      aiSentimentAnalysis: true,
+      aiSmartScheduling: true,
+      aiRevenueForecast: true,
     },
     pricing: {
       monthlyPrice: 599900, // ₹5,999 / month in paise

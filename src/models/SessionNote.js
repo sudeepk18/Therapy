@@ -15,6 +15,35 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// ─── Sub-schema: AI Sentiment Analysis ─────────────────────────────────────────────
+// Populated after the note is saved, using VADER sentiment analysis.
+//
+// IMPORTANT DISCLAIMER:
+//   This score reflects linguistic patterns in the note text ONLY.
+//   It is NOT a mental-health diagnosis, NOT a mood disorder assessment,
+//   and NOT a clinical determination of any kind.
+//   It is a THERAPIST-ONLY engagement indicator.
+//   This field is NEVER returned through client-facing APIs.
+const AISentimentSchema = new Schema(
+  {
+    // VADER compound score: -1.0 (most negative) to +1.0 (most positive)
+    score: { type: Number, min: -1, max: 1 },
+
+    // 3-class label derived from compound score
+    label: {
+      type: String,
+      enum: ['POSITIVE', 'NEUTRAL', 'NEGATIVE'],
+    },
+
+    // Version of the sentiment model used
+    modelVersion: { type: String, trim: true },
+
+    // When the analysis was performed
+    analyzedAt: { type: Date },
+  },
+  { _id: false }
+);
+
 // ─── Sub-schema: SOAP Note Fields ────────────────────────────────────────────
 // Used when noteType === 'soap'
 const SoapSchema = new Schema(
@@ -196,6 +225,10 @@ const SessionNoteSchema = new Schema(
 
     // Timestamp when the note was shared with the client
     sharedWithClientAt: { type: Date },
+
+    // ── AI Intelligence (Therapist-only) ─────────────────────────────────────
+    // Populated after note save by the AI service. NEVER returned to clients.
+    aiSentiment: { type: AISentimentSchema, default: null },
   },
   {
     timestamps: true,

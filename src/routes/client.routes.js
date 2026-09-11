@@ -23,7 +23,15 @@ router
   .get(clientController.getClientById)
   .patch(clientController.updateClient);
 
-router.patch('/:id/intake', clientController.updateClientIntake);
+router.get('/:id/profile', clientController.getClientProfile);
+router.route('/:id/intake')
+  .get(clientController.getClientIntake)
+  .patch(clientController.updateClientIntake);
+
+router.route('/:id/consent')
+  .get(clientController.getClientConsent)
+  .post(clientController.submitConsent);
+
 router.post('/:id/discharge', clientController.dischargeClient);
 
 module.exports = router;

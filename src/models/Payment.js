@@ -202,11 +202,10 @@ PaymentSchema.index({ gatewayPaymentId: 1 }, { sparse: true }); // Webhook dedup
 // ─── Pre-save Middleware ─────────────────────────────────────────────────────
 
 // Auto-compute netAmount = amount - platformFee
-PaymentSchema.pre('save', function (next) {
+PaymentSchema.pre('save', function () {
   if (this.isModified('amount') || this.isModified('platformFee')) {
     this.netAmount = (this.amount || 0) - (this.platformFee || 0);
   }
-  next();
 });
 
 // ─── Export ───────────────────────────────────────────────────────────────────

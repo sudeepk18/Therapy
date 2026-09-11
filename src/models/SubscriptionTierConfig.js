@@ -128,6 +128,23 @@ const FeaturesSchema = new Schema(
 
     // HIPAA / DPDP compliance documentation provided
     complianceDocs: { type: Boolean, default: false },
+
+    // ── AI Intelligence Features ─────────────────────────────────────────────────
+    // Feature key used with checkFeatureEnabled('aiNoShowPrediction'), etc.
+    // All default to false — enabled per tier via seed script.
+
+    // AI-powered appointment no-show risk prediction (therapist-only indicator)
+    aiNoShowPrediction: { type: Boolean, default: false },
+
+    // AI session-note sentiment analysis (engagement indicator, therapist-only)
+    // NOTE: aiNoteSuggestions already exists above for SOAP draft feature
+    aiSentimentAnalysis: { type: Boolean, default: false },
+
+    // AI-powered scheduling slot recommendations based on booking patterns
+    aiSmartScheduling: { type: Boolean, default: false },
+
+    // AI revenue forecasting based on historical payment data
+    aiRevenueForecast: { type: Boolean, default: false },
   },
   { _id: false }
 );
