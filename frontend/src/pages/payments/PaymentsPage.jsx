@@ -43,6 +43,12 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [status]);
 
+  useEffect(() => {
+    const handleUpdate = () => fetchPayments();
+    window.addEventListener('payment-updated', handleUpdate);
+    return () => window.removeEventListener('payment-updated', handleUpdate);
+  }, []);
+
   const totalRev = summary?.totalRevenue ? `₹${(summary.totalRevenue / 100).toLocaleString('en-IN')}` : '₹0';
 
   return (

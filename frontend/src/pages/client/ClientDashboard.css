@@ -373,3 +373,139 @@
   .cd-therapist-card { flex-wrap: wrap; }
   .cd-section { padding: 16px; }
 }
+
+/* ── Shared Note Cards ───────────────────────────────────────────────── */
+.cd-note-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #18181f;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  gap: 16px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cd-note-card:hover {
+  border-color: rgba(255,255,255,0.12);
+  background: #1c1c24;
+}
+
+.cd-note-meta {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.cd-note-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0 0 4px;
+}
+
+.cd-note-snippet {
+  font-size: 12.5px;
+  color: #9ca3af;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cd-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #374151;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.cd-note-btn:hover {
+  filter: brightness(1.15);
+}
+
+/* ── Note Reader Modal ───────────────────────────────────────────────── */
+.cd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.cd-modal-card {
+  background: #16161c;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.cd-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.cd-modal-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+}
+
+.cd-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cd-note-block {
+  background: #1f1f27;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.cd-note-block-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.cd-note-block-text {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #e5e7eb;
+  margin: 0;
+  white-space: pre-wrap;
+}

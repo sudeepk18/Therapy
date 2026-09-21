@@ -38,12 +38,16 @@ import { Spinner } from '../components/common/Common';
 /**
  * RequireTherapist
  * Protects all /therapist/* routes.
- * Redirects unauthenticated users to /login.
+ * Redirects unauthenticated users to /login and clients to their portal.
  */
 function RequireTherapist({ children }) {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
   if (loading) return <Spinner fullPage />;
   if (!user)   return <Navigate to="/login" replace />;
+  if (userRole === 'client') {
+    const slug = user?.therapistId?.slug || user?.therapistSlug || '';
+    return <Navigate to={slug ? `/client/${slug}/portal` : '/login'} replace />;
+  }
   return children;
 }
 
@@ -65,14 +69,26 @@ function RequireClient({ children }) {
 
 /**
  * RequireGuest
- * Keeps authenticated therapists away from auth pages.
- * Redirects to /therapist/dashboard.
+ * Keeps authenticated users away from auth pages.
  */
 function RequireGuest({ children }) {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
   if (loading) return <Spinner fullPage />;
-  if (user)    return <Navigate to="/therapist/dashboard" replace />;
+  if (user && userRole === 'therapist') {
+    return <Navigate to="/therapist/dashboard" replace />;
+  }
   return children;
+}
+
+function RootRedirect() {
+  const { user, userRole, loading } = useAuth();
+  if (loading) return <Spinner fullPage />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (userRole === 'client') {
+    const slug = user?.therapistId?.slug || user?.therapistSlug || '';
+    return <Navigate to={slug ? `/client/${slug}/portal` : '/login'} replace />;
+  }
+  return <Navigate to="/therapist/dashboard" replace />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,7 +150,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* ── Backward Compatibility Redirects ─────────────────────────── */}
-      <Route path="/dashboard"  element={<Navigate to="/therapist/dashboard"  replace />} />
+      <Route path="/dashboard"  element={<RootRedirect />} />
       <Route path="/clients"    element={<Navigate to="/therapist/clients"    replace />} />
       <Route path="/leads"      element={<Navigate to="/therapist/leads"      replace />} />
       <Route path="/sessions"   element={<Navigate to="/therapist/schedule"   replace />} />
@@ -142,7 +158,7 @@ export default function AppRoutes() {
       <Route path="/payments"   element={<Navigate to="/therapist/payments"   replace />} />
 
       {/* ── Default ──────────────────────────────────────────────────── */}
-      <Route index element={<Navigate to="/therapist/dashboard" replace />} />
+      <Route index element={<RootRedirect />} />
     </Routes>
   );
 }

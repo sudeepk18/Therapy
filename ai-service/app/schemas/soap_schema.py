@@ -4,6 +4,7 @@ Pydantic models for the SOAP note draft generation endpoint.
 """
 
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class SoapDraftRequest(BaseModel):
@@ -13,7 +14,6 @@ class SoapDraftRequest(BaseModel):
                            description="Free-text session description from the therapist")
 
 
-from typing import Optional
 
 
 class SoapDraftResponse(BaseModel):

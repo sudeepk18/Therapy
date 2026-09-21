@@ -15,7 +15,12 @@ import {
   startOfToday,
 } from 'date-fns';
 
-export default function Calendar({ selectedDate, onSelectDate, minDate = startOfToday() }) {
+export default function Calendar({
+  selectedDate,
+  onSelectDate,
+  minDate = startOfToday(),
+  availableDays = null,
+}) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate ? new Date(selectedDate) : new Date());
 
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -96,7 +101,9 @@ export default function Calendar({ selectedDate, onSelectDate, minDate = startOf
           const isSelected = selectedDate ? isSameDay(day, new Date(selectedDate)) : false;
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isPast = minDate ? isBefore(day, minDate) && !isSameDay(day, minDate) : false;
-          const isDisabled = !isCurrentMonth || isPast;
+          const dayOfWeek = day.getDay(); // 0 = Sun, 1 = Mon ...
+          const isOffDay = Array.isArray(availableDays) && availableDays.length > 0 && !availableDays.includes(dayOfWeek);
+          const isDisabled = !isCurrentMonth || isPast || isOffDay;
 
           return (
             <button
@@ -104,6 +111,7 @@ export default function Calendar({ selectedDate, onSelectDate, minDate = startOf
               type="button"
               disabled={isDisabled}
               onClick={() => onSelectDate(format(day, 'yyyy-MM-dd'))}
+              title={isOffDay && isCurrentMonth && !isPast ? 'Therapist is off on this day' : undefined}
               style={{
                 height: 38,
                 borderRadius: 'var(--radius-md)',
@@ -120,7 +128,7 @@ export default function Calendar({ selectedDate, onSelectDate, minDate = startOf
                   : isCurrentMonth
                   ? 'var(--text-primary)'
                   : 'var(--text-muted)',
-                opacity: isDisabled ? 0.35 : 1,
+                opacity: isDisabled ? 0.3 : 1,
                 fontSize: 13,
                 fontWeight: isSelected || isSameDay(day, new Date()) ? 700 : 500,
                 cursor: isDisabled ? 'not-allowed' : 'pointer',

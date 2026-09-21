@@ -66,6 +66,25 @@
   border: 2px solid var(--bg-surface);
 }
 
+.header-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  border: 2px solid var(--bg-surface);
+}
+
 /* User */
 .header-user {
   display: flex;

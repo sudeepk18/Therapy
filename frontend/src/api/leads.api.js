@@ -7,4 +7,6 @@ export const leadsApi = {
   update:    (id, data) => api.patch(`/leads/${id}`, data),
   addFollowUp: (id, data) => api.post(`/leads/${id}/follow-up`, data),
   convert:   (id)     => api.post(`/leads/${id}/convert`),
+  acceptAppointment: (id) => api.post(`/leads/${id}/accept`),
+  rejectAppointment: (id, data) => api.post(`/leads/${id}/reject`, data),
 };

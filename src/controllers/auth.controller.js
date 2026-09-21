@@ -10,7 +10,7 @@ const ApiError = require('../utils/ApiError');
 const authService = require('../services/auth.service');
 const { Therapist } = require('../models');
 
-// Cookie options helper for JWT authentication
+
 const getCookieOptions = () => ({
   expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
   httpOnly: true, // Prevents client-side JS XSS attacks from reading the cookie

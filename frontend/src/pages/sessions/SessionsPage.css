@@ -63,3 +63,45 @@
   color: var(--text-muted);
   font-weight: 500;
 }
+
+/* Session Fee & Payment Tag */
+.session-fee-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.session-fee-amount {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.session-payment-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.session-payment-tag--paid {
+  color: var(--success);
+  background: var(--success-bg);
+}
+
+.session-payment-tag--pending {
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.session-payment-tag--free {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+

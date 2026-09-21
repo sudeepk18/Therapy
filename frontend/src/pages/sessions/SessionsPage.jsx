@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Calendar, Video, MapPin, Clock } from 'lucide-react';
+import { Plus, Search, Calendar, Video, MapPin, Clock, CheckCircle } from 'lucide-react';
 import { sessionsApi } from '../../api/sessions.api';
 import { clientsApi } from '../../api/clients.api';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import NoShowRiskBadge from '../../components/ai/NoShowRiskBadge';
 import '../clients/ClientsPage.css';
 import './SessionsPage.css';
 
@@ -41,8 +42,16 @@ export default function SessionsPage() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await sessionsApi.updateStatus(id, { status: newStatus });
-      toast.success(`Session status updated to ${newStatus}`);
+      const res = await sessionsApi.updateStatus(id, { status: newStatus });
+      const updated = res.data?.data;
+      if (newStatus === 'completed') {
+        const amt = updated?.feeAmount ? `₹${(updated.feeAmount / 100).toLocaleString('en-IN')}` : '';
+        toast.success(`Session completed! Payment of ${amt} automatically updated.`);
+      } else {
+        toast.success(`Session status updated to ${newStatus}`);
+      }
+      window.dispatchEvent(new CustomEvent('payment-updated'));
+      window.dispatchEvent(new CustomEvent('appointment-updated'));
       fetchSessions();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update status');
@@ -61,8 +70,8 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="page">
-      {/* Toolbar */}
+    <div className="page sessions-page">
+      {/* Page Header */}
       <div className="page-toolbar">
         <div className="toolbar-filters">
           <select
@@ -73,10 +82,10 @@ export default function SessionsPage() {
           >
             <option value="">All Statuses</option>
             <option value="scheduled">Scheduled</option>
-            <option value="in-progress">In Progress</option>
+            <option value="in_progress">In Progress</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
-            <option value="no-show">No Show</option>
+            <option value="no_show">No Show</option>
           </select>
         </div>
         <div style={{ flex: 1 }} />
@@ -100,6 +109,8 @@ export default function SessionsPage() {
                 <th>Type</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Fee &amp; Payment</th>
+                <th>Risk</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -107,7 +118,7 @@ export default function SessionsPage() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
-                    {Array.from({ length: 7 }).map((__, j) => (
+                    {Array.from({ length: 9 }).map((__, j) => (
                       <td key={j}>
                         <div className="skeleton" style={{ height: 14, borderRadius: 4, width: 80 }} />
                       </td>
@@ -116,7 +127,7 @@ export default function SessionsPage() {
                 ))
               ) : sessions.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={9}>
                     <div className="table-empty">
                       <Calendar size={32} />
                       <p>No sessions scheduled yet</p>
@@ -144,12 +155,50 @@ export default function SessionsPage() {
                           {s.medium || 'in-person'}
                         </span>
                       </td>
-                      <td className="text-secondary">{s.sessionType || 'individual'}</td>
+                      <td className="text-secondary capitalize">{s.sessionType ? s.sessionType.replace('_', ' ') : 'individual'}</td>
                       <td className="text-secondary">{s.durationMinutes || 50} min</td>
                       <td>
                         <span className="status-badge" style={{ color: st.color, background: st.bg }}>
                           {s.status}
                         </span>
+                      </td>
+                      <td>
+                        <div className="session-fee-wrap">
+                          <span className="session-fee-amount">
+                            {s.feeAmount > 0
+                              ? `₹${(s.feeAmount / 100).toLocaleString('en-IN')}`
+                              : s.sessionType === 'consultation'
+                              ? 'Free'
+                              : s.sessionType === 'couples'
+                              ? '₹2,200'
+                              : s.sessionType === 'family'
+                              ? '₹2,500'
+                              : s.sessionType === 'group'
+                              ? '₹1,800'
+                              : s.sessionType === 'follow_up'
+                              ? '₹1,000'
+                              : '₹1,500'}
+                          </span>
+                          {s.status === 'completed' ? (
+                            <span className="session-payment-tag session-payment-tag--paid">
+                              <CheckCircle size={10} /> Paid
+                            </span>
+                          ) : s.sessionType === 'consultation' ? (
+                            <span className="session-payment-tag session-payment-tag--free">
+                              Free
+                            </span>
+                          ) : (
+                            <span className="session-payment-tag session-payment-tag--pending">
+                              Pending
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        {s.status === 'scheduled'
+                          ? <NoShowRiskBadge aiRisk={s.aiRisk} compact />
+                          : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
+                        }
                       </td>
                       <td>
                         <div className="session-actions">

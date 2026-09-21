@@ -39,4 +39,8 @@ export const clientPortalApi = {
   // Get the logged-in client's therapist info
   getMyTherapist: () =>
     api.get('/portal/therapist'),
+
+  // Get notes shared with the logged-in client
+  getMyNotes: () =>
+    api.get('/session-notes/my-notes'),
 };

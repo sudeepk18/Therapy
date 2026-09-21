@@ -5,7 +5,7 @@ import { clientPortalApi } from '../../api/client.portal.api';
 import { Spinner } from '../../components/common/Common';
 import Calendar from '../../components/scheduling/Calendar';
 import SlotPicker from '../../components/scheduling/SlotPicker';
-import { format, startOfToday } from 'date-fns';
+import { format, startOfToday, addDays } from 'date-fns';
 import toast from 'react-hot-toast';
 import './BookingPage.css';
 
@@ -48,7 +48,22 @@ export default function BookingPage() {
   // Fetch therapist info
   useEffect(() => {
     clientPortalApi.getTherapistBySlug(slug)
-      .then(res => setTherapist(res.data.data))
+      .then(res => {
+        const data = res.data.data;
+        setTherapist(data);
+        if (Array.isArray(data?.availableDays) && data.availableDays.length > 0) {
+          const today = startOfToday();
+          if (!data.availableDays.includes(today.getDay())) {
+            for (let i = 1; i <= 7; i++) {
+              const nextDate = addDays(today, i);
+              if (data.availableDays.includes(nextDate.getDay())) {
+                setSelectedDate(format(nextDate, 'yyyy-MM-dd'));
+                break;
+              }
+            }
+          }
+        }
+      })
       .catch(() => toast.error('Could not load therapist details'))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -96,7 +111,7 @@ export default function BookingPage() {
     }
     setSubmitting(true);
     try {
-      await clientPortalApi.requestBooking(slug, form);
+      await clientPortalApi.requestBooking(slug, { ...form, durationMinutes: selectedType.duration });
       toast.success('Appointment booked successfully!');
       navigate(`/client/${slug}/payment`, { state: { form, therapist, selectedType } });
     } catch (err) {
@@ -216,6 +231,7 @@ export default function BookingPage() {
                 <Calendar
                   selectedDate={selectedDate}
                   onSelectDate={(d) => setSelectedDate(d)}
+                  availableDays={therapist?.availableDays}
                 />
                 <SlotPicker
                   slots={slots}

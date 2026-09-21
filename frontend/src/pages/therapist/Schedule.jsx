@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
   Calendar, Clock, Plus, Video, MapPin, CheckCircle,
-  Save, Trash2, Sliders, AlertCircle,
+  Save, Trash2, Sliders, AlertCircle, Check,
 } from 'lucide-react';
 import { sessionsApi } from '../../api/sessions.api';
 import { clientsApi } from '../../api/clients.api';
+import { leadsApi } from '../../api/leads.api';
 import api from '../../api/axios';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import NoShowRiskBadge from '../../components/ai/NoShowRiskBadge';
 import '../clients/ClientsPage.css';
 import '../sessions/SessionsPage.css';
 
@@ -38,6 +40,7 @@ export default function Schedule() {
   const [status,    setStatus]    = useState('');
   const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
   // Availability state
   const [weeklySchedule, setWeeklySchedule] = useState([]);
@@ -54,6 +57,41 @@ export default function Schedule() {
       toast.error('Failed to load appointments');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    try {
+      const res = await leadsApi.list({ limit: 20 });
+      const list = res.data.data.leads || [];
+      const pending = list.filter(
+        (l) => l.bookingDetails?.scheduledAt && l.bookingDetails?.status === 'pending'
+      );
+      setPendingRequests(pending);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAcceptRequest = async (leadId) => {
+    try {
+      await leadsApi.acceptAppointment(leadId);
+      toast.success('Appointment accepted and added to schedule! Slot is now closed.');
+      fetchSessions();
+      fetchPendingRequests();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to accept appointment');
+    }
+  };
+
+  const handleDeclineRequest = async (leadId) => {
+    if (!window.confirm('Are you sure you want to decline this booking request?')) return;
+    try {
+      await leadsApi.rejectAppointment(leadId);
+      toast.success('Appointment request declined');
+      fetchPendingRequests();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to decline request');
     }
   };
 
@@ -87,10 +125,20 @@ export default function Schedule() {
   useEffect(() => {
     if (activeTab === 'appointments') {
       fetchSessions();
+      fetchPendingRequests();
     } else {
       fetchAvailability();
     }
   }, [activeTab, status]);
+
+  useEffect(() => {
+    const handleAppointmentUpdated = () => {
+      fetchSessions();
+      fetchPendingRequests();
+    };
+    window.addEventListener('appointment-updated', handleAppointmentUpdated);
+    return () => window.removeEventListener('appointment-updated', handleAppointmentUpdated);
+  }, []);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -228,17 +276,17 @@ export default function Schedule() {
           <div className="page-toolbar">
             <div className="toolbar-filters">
               <select
-                id="session-status-filter"
+                id="schedule-status-filter"
                 className="filter-select"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
                 <option value="">All Statuses</option>
                 <option value="scheduled">Scheduled</option>
-                <option value="in-progress">In Progress</option>
+                <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
-                <option value="no-show">No Show</option>
+                <option value="no_show">No Show</option>
               </select>
             </div>
             <div style={{ flex: 1 }} />
@@ -262,6 +310,8 @@ export default function Schedule() {
                     <th>Type</th>
                     <th>Duration</th>
                     <th>Status</th>
+                    <th>Fee &amp; Payment</th>
+                    <th>Risk</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -269,7 +319,7 @@ export default function Schedule() {
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i}>
-                        {Array.from({ length: 7 }).map((__, j) => (
+                        {Array.from({ length: 9 }).map((__, j) => (
                           <td key={j}>
                             <div className="skeleton" style={{ height: 14, borderRadius: 4, width: 80 }} />
                           </td>
@@ -278,7 +328,7 @@ export default function Schedule() {
                     ))
                   ) : sessions.length === 0 ? (
                     <tr>
-                      <td colSpan={7}>
+                      <td colSpan={9}>
                         <div className="table-empty">
                           <Calendar size={32} />
                           <p>No appointments scheduled</p>
@@ -302,16 +352,54 @@ export default function Schedule() {
                           </td>
                           <td className="text-secondary">
                             <span className="session-medium-chip">
-                              {s.medium === 'online' ? <Video size={13} /> : <MapPin size={13} />}
-                              {s.medium || 'in-person'}
+                              {s.medium === 'video' || s.medium === 'online' ? <Video size={13} /> : <MapPin size={13} />}
+                              {s.medium === 'video' || s.medium === 'online' ? 'Online Video' : s.medium === 'in_person' || s.medium === 'in-person' ? 'In-Person' : s.medium === 'audio' || s.medium === 'phone' ? 'Phone Call' : s.medium || 'Online Video'}
                             </span>
                           </td>
-                          <td className="text-secondary">{s.sessionType || 'individual'}</td>
+                          <td className="text-secondary capitalize">{s.sessionType ? s.sessionType.replace('_', ' ') : 'individual'}</td>
                           <td className="text-secondary">{s.durationMinutes || 50} min</td>
                           <td>
                             <span className="status-badge" style={{ color: st.color, background: st.bg }}>
                               {s.status}
                             </span>
+                          </td>
+                          <td>
+                            <div className="session-fee-wrap">
+                              <span className="session-fee-amount">
+                                {s.feeAmount > 0
+                                  ? `₹${(s.feeAmount / 100).toLocaleString('en-IN')}`
+                                  : s.sessionType === 'consultation'
+                                  ? 'Free'
+                                  : s.sessionType === 'couples'
+                                  ? '₹2,200'
+                                  : s.sessionType === 'family'
+                                  ? '₹2,500'
+                                  : s.sessionType === 'group'
+                                  ? '₹1,800'
+                                  : s.sessionType === 'follow_up'
+                                  ? '₹1,000'
+                                  : '₹1,500'}
+                              </span>
+                              {s.status === 'completed' ? (
+                                <span className="session-payment-tag session-payment-tag--paid">
+                                  <CheckCircle size={10} /> Paid
+                                </span>
+                              ) : s.sessionType === 'consultation' ? (
+                                <span className="session-payment-tag session-payment-tag--free">
+                                  Free
+                                </span>
+                              ) : (
+                                <span className="session-payment-tag session-payment-tag--pending">
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            {s.status === 'scheduled'
+                              ? <NoShowRiskBadge aiRisk={s.aiRisk} compact />
+                              : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
+                            }
                           </td>
                           <td>
                             <div className="session-actions">
@@ -514,18 +602,24 @@ function BookSessionModal({ onClose, onSuccess }) {
     clientId: '',
     scheduledAt: '',
     durationMinutes: 50,
-    medium: 'online',
+    medium: 'video',
     sessionType: 'individual',
     notes: '',
   });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    clientsApi.list({ limit: 100, status: 'active' }).then((res) => {
-      setClients(res.data.data.clients || []);
-      if (res.data.data.clients?.length) {
-        setForm((f) => ({ ...f, clientId: res.data.data.clients[0]._id }));
+    clientsApi.list({ limit: 100 }).then((res) => {
+      const allClients = res.data.data.clients || [];
+      // Prefer active clients if present, otherwise show all
+      const activeOnly = allClients.filter(c => c.status === 'active');
+      const list = activeOnly.length > 0 ? activeOnly : allClients;
+      setClients(list);
+      if (list.length > 0) {
+        setForm((f) => ({ ...f, clientId: list[0]._id }));
       }
+    }).catch(() => {
+      toast.error('Could not load clients list');
     });
   }, []);
 
@@ -543,7 +637,11 @@ function BookSessionModal({ onClose, onSuccess }) {
     }
     setBusy(true);
     try {
-      await sessionsApi.book(form);
+      await sessionsApi.book({
+        ...form,
+        durationMinutes: Number(form.durationMinutes) || 50,
+        preSessionNotes: form.notes,
+      });
       toast.success('Session booked successfully!');
       onSuccess();
     } catch (err) {
@@ -567,11 +665,15 @@ function BookSessionModal({ onClose, onSuccess }) {
               onChange={handleChange}
               required
             >
-              {clients.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name} ({c.email})
-                </option>
-              ))}
+              {clients.length === 0 ? (
+                <option value="" disabled>No clients found (please add a client first)</option>
+              ) : (
+                clients.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name} ({c.email})
+                  </option>
+                ))
+              )}
             </select>
           </label>
 
@@ -591,9 +693,9 @@ function BookSessionModal({ onClose, onSuccess }) {
             <label>
               Medium
               <select name="medium" className="modal-input" value={form.medium} onChange={handleChange}>
-                <option value="online">Online Video</option>
-                <option value="in-person">In-Person</option>
-                <option value="phone">Phone Call</option>
+                <option value="video">Online Video</option>
+                <option value="in_person">In-Person</option>
+                <option value="audio">Phone Call</option>
               </select>
             </label>
 

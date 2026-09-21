@@ -4,6 +4,7 @@ import {
   Calendar, Clock, Video, User, Phone, LogOut,
   ChevronRight, BookOpen, Shield, Loader,
   MapPin, CheckCircle2, XCircle, AlertCircle,
+  FileText, X, Check,
 } from 'lucide-react';
 import { clientPortalApi } from '../../api/client.portal.api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -55,6 +56,8 @@ export default function ClientDashboard() {
   const [profile,   setProfile]   = useState(null);
   const [sessions,  setSessions]  = useState({ upcoming: [], past: [] });
   const [therapist, setTherapist] = useState(null);
+  const [notes,     setNotes]     = useState([]);
+  const [selectedNote, setSelectedNote] = useState(null);
   const [loading,   setLoading]   = useState(true);
 
   // Redirect if not logged in as a client
@@ -69,14 +72,16 @@ export default function ClientDashboard() {
 
     const load = async () => {
       try {
-        const [profileRes, sessionsRes, therapistRes] = await Promise.all([
+        const [profileRes, sessionsRes, therapistRes, notesRes] = await Promise.all([
           clientPortalApi.getMyProfile(),
           clientPortalApi.getMySessions(),
           clientPortalApi.getMyTherapist(),
+          clientPortalApi.getMyNotes().catch(() => ({ data: { data: { notes: [] } } })),
         ]);
         setProfile(profileRes.data.data);
         setSessions(sessionsRes.data.data);
         setTherapist(therapistRes.data.data);
+        setNotes(notesRes.data?.data?.notes || []);
       } catch {
         toast.error('Could not load your portal. Please try again.');
       } finally {
@@ -145,11 +150,11 @@ export default function ClientDashboard() {
           </div>
           <div className="cd-stat-card">
             <div className="cd-stat-icon" style={{ background: '#f59e0b18' }}>
-              <BookOpen size={18} style={{ color: '#f59e0b' }} />
+              <FileText size={18} style={{ color: '#f59e0b' }} />
             </div>
             <div>
-              <p className="cd-stat-num">{sessions.past.length + sessions.upcoming.length}</p>
-              <p className="cd-stat-label">Total Sessions</p>
+              <p className="cd-stat-num">{notes.length}</p>
+              <p className="cd-stat-label">Shared Notes</p>
             </div>
           </div>
         </div>
@@ -193,6 +198,56 @@ export default function ClientDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── Shared Session Notes & Homework ────────────────────────── */}
+        <section className="cd-section">
+          <div className="cd-section-header">
+            <h2 className="cd-section-title">
+              <FileText size={16} style={{ color: '#f59e0b' }} />
+              Shared Notes &amp; Action Items
+            </h2>
+          </div>
+
+          {notes.length === 0 ? (
+            <div className="cd-empty">
+              <FileText size={28} color="#374151" />
+              <p>No shared session notes yet.</p>
+              <p style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                When your therapist shares summaries or homework from your sessions, they will appear here.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {notes.map((note) => {
+                const sessionDate = note.sessionId?.scheduledAt ? formatDate(note.sessionId.scheduledAt) : formatDate(note.createdAt);
+                const snippet = note.homework || note.soap?.plan || note.dap?.plan || note.soap?.subjective || note.content || 'Session discussion summary and recommendations';
+                return (
+                  <div key={note._id} className="cd-note-card">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="cd-note-meta">
+                        {sessionDate} · {note.isSigned ? 'Digitally Signed' : 'Shared Note'}
+                      </div>
+                      <h3 className="cd-note-title">{note.title || 'Session Note & Plan'}</h3>
+                      <p className="cd-note-snippet">{snippet}</p>
+                      {note.homework && (
+                        <div style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4 }}>
+                          🎯 Homework Assigned
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="cd-note-btn"
+                      onClick={() => setSelectedNote(note)}
+                    >
+                      Read Note →
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
@@ -272,6 +327,74 @@ export default function ClientDashboard() {
         </div>
 
       </main>
+
+      {/* ── Note Reader Modal ─────────────────────────────────────────── */}
+      {selectedNote && (
+        <div className="cd-modal-overlay" onClick={() => setSelectedNote(null)}>
+          <div className="cd-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="cd-modal-header">
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#f9fafb' }}>
+                  {selectedNote.title || 'Session Note & Plan'}
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af' }}>
+                  Session on {selectedNote.sessionId?.scheduledAt ? formatDate(selectedNote.sessionId.scheduledAt) : formatDate(selectedNote.createdAt)}
+                  {selectedNote.isSigned && ' · Digitally signed by therapist'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="cd-modal-close"
+                onClick={() => setSelectedNote(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="cd-modal-body">
+              {/* Homework / Action Items */}
+              {selectedNote.homework && (
+                <div className="cd-note-block" style={{ borderLeft: '3px solid #f59e0b', background: 'rgba(245, 158, 11, 0.08)' }}>
+                  <h4 className="cd-note-block-title" style={{ color: '#f59e0b' }}>🎯 Assigned Exercises &amp; Homework</h4>
+                  <p className="cd-note-block-text">{selectedNote.homework}</p>
+                </div>
+              )}
+
+              {/* Plan / Recommendations */}
+              {(selectedNote.soap?.plan || selectedNote.dap?.plan) && (
+                <div className="cd-note-block">
+                  <h4 className="cd-note-block-title">Treatment Plan &amp; Recommendations</h4>
+                  <p className="cd-note-block-text">{selectedNote.soap?.plan || selectedNote.dap?.plan}</p>
+                </div>
+              )}
+
+              {/* Discussion / Client Report */}
+              {(selectedNote.soap?.subjective || selectedNote.dap?.data || selectedNote.content) && (
+                <div className="cd-note-block">
+                  <h4 className="cd-note-block-title">Discussion &amp; Observations</h4>
+                  <p className="cd-note-block-text">
+                    {selectedNote.soap?.subjective || selectedNote.dap?.data || selectedNote.content}
+                  </p>
+                </div>
+              )}
+
+              {/* Interventions discussed */}
+              {selectedNote.interventionsUsed?.length > 0 && (
+                <div className="cd-note-block">
+                  <h4 className="cd-note-block-title">Modalities &amp; Strategies Discussed</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                    {selectedNote.interventionsUsed.map((intv, idx) => (
+                      <span key={idx} style={{ background: '#374151', color: '#e5e7eb', fontSize: 12, padding: '3px 8px', borderRadius: 6 }}>
+                        {intv}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

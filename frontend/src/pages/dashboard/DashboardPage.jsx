@@ -8,6 +8,7 @@ import StatCard        from '../../components/stats/StatCard';
 import RecentClients   from '../../components/dashboard/RecentClients';
 import UpcomingSessions from '../../components/dashboard/UpcomingSessions';
 import RevenueChart    from '../../components/charts/RevenueChart';
+import AIInsightsSection from '../../components/ai/AIInsightsSection';
 import { useAuth }     from '../../contexts/AuthContext';
 import './DashboardPage.css';
 
@@ -54,6 +55,16 @@ export default function DashboardPage() {
       }
     };
     fetchAll();
+
+    const handleUpdate = () => {
+      fetchAll();
+    };
+    window.addEventListener('payment-updated', handleUpdate);
+    window.addEventListener('appointment-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('payment-updated', handleUpdate);
+      window.removeEventListener('appointment-updated', handleUpdate);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -136,6 +147,9 @@ export default function DashboardPage() {
           <UpcomingSessions sessions={sessions} loading={loading} />
         </div>
       </div>
+
+      {/* AI Insights Intelligence Layer */}
+      <AIInsightsSection />
 
       {/* Recent clients */}
       <div className="dashboard-card">

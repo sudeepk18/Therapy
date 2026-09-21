@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Plus, FileText, Lock, CheckCircle, Share2, Shield, Eye, Trash2 } from 'lucide-react';
+import { Plus, FileText, Lock, CheckCircle, Share2, Shield, Eye, Trash2, Sparkles, Activity } from 'lucide-react';
 import { notesApi } from '../../api/notes.api';
 import { clientsApi } from '../../api/clients.api';
 import { sessionsApi } from '../../api/sessions.api';
+import { aiApi } from '../../api/ai.api';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import SoapDraftModal from '../../components/ai/SoapDraftModal';
+import EngagementTrendChart from '../../components/ai/EngagementTrendChart';
 import '../clients/ClientsPage.css';
 import './NotesPage.css';
 
@@ -14,6 +17,12 @@ const NOTE_STATUS_BADGE = {
   signed:    { color: 'var(--success)', bg: 'var(--success-bg)' },
 };
 
+const SENTIMENT_BADGE = {
+  POSITIVE: { color: 'var(--success)', bg: 'var(--success-bg)', icon: '🟢' },
+  NEUTRAL:  { color: 'var(--info)',    bg: 'var(--info-bg)',    icon: '🟡' },
+  NEGATIVE: { color: 'var(--danger)',  bg: 'var(--danger-bg)',  icon: '🔴' },
+};
+
 export default function NotesPage() {
   const [notes,      setNotes]      = useState([]);
   const [clients,    setClients]    = useState([]);
@@ -21,6 +30,8 @@ export default function NotesPage() {
   const [loading,    setLoading]    = useState(true);
   const [showModal,  setShowModal]  = useState(false);
   const [activeNote, setActiveNote] = useState(null); // for viewing/editing
+  const [engagementTrend, setEngagementTrend] = useState(null);
+  const [showEngagement, setShowEngagement]   = useState(false);
 
   useEffect(() => {
     clientsApi.list({ limit: 100, status: 'active' }).then((res) => {
@@ -34,12 +45,25 @@ export default function NotesPage() {
     });
   }, []);
 
+  const fetchEngagement = async (clientId) => {
+    if (!clientId) return;
+    try {
+      const res = await aiApi.getClientEngagement(clientId);
+      if (res.data?.data && !res.data.data.aiUnavailable) {
+        setEngagementTrend(res.data.data.trend || []);
+      }
+    } catch {
+      // Non-critical
+    }
+  };
+
   const fetchNotes = async (clientId) => {
     if (!clientId) return;
     setLoading(true);
     try {
       const res = await notesApi.getByClient(clientId);
       setNotes(res.data.data.notes || []);
+      fetchEngagement(clientId);
     } catch {
       toast.error('Failed to load notes');
     } finally {
@@ -95,6 +119,20 @@ export default function NotesPage() {
     }
   };
 
+  const handleAnalyzeSentiment = async (noteId) => {
+    try {
+      const res = await aiApi.analyzeSentiment(noteId);
+      if (res.data?.data?.aiUnavailable) {
+        toast.error('AI service is temporarily unavailable');
+        return;
+      }
+      toast.success('Sentiment analyzed successfully');
+      fetchNotes(selectedClient);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to analyze sentiment');
+    }
+  };
+
   return (
     <div className="page">
       {/* Toolbar */}
@@ -115,6 +153,16 @@ export default function NotesPage() {
           </select>
         </div>
         <div style={{ flex: 1 }} />
+        {engagementTrend && engagementTrend.length > 1 && (
+          <button
+            className="btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginRight: 8 }}
+            onClick={() => setShowEngagement(!showEngagement)}
+          >
+            <Activity size={14} color="var(--teal)" />
+            {showEngagement ? 'Hide Trend' : 'Client Trend'}
+          </button>
+        )}
         <button
           id="new-note-btn"
           className="btn-primary"
@@ -124,6 +172,23 @@ export default function NotesPage() {
           <Plus size={15} /> New Session Note
         </button>
       </div>
+
+      {/* Engagement Trend Panel */}
+      {showEngagement && engagementTrend && engagementTrend.length > 1 && (
+        <div className="dashboard-card" style={{ marginBottom: 16, padding: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Activity size={15} color="var(--teal)" />
+              <h4 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Client Session Sentiment &amp; Engagement Trend</h4>
+              <span className="ai-badge">Therapist Only</span>
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              Linguistic pattern indicator · NOT a medical diagnosis
+            </span>
+          </div>
+          <EngagementTrendChart trend={engagementTrend} loading={false} />
+        </div>
+      )}
 
       {/* Notes Grid */}
       <div className="notes-container">
@@ -153,6 +218,22 @@ export default function NotesPage() {
                     <span className="status-badge" style={{ color: st.color, background: st.bg }}>
                       {note.status === 'signed' ? '🔒 Signed' : note.status}
                     </span>
+                    {note.aiSentiment && (
+                      <span
+                        className="status-badge"
+                        style={{
+                          color: SENTIMENT_BADGE[note.aiSentiment.label]?.color || 'var(--text-secondary)',
+                          background: SENTIMENT_BADGE[note.aiSentiment.label]?.bg || 'var(--bg-elevated)',
+                          fontSize: 11,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}
+                        title={`AI Sentiment: ${note.aiSentiment.score > 0 ? '+' : ''}${note.aiSentiment.score?.toFixed(2)}`}
+                      >
+                        {SENTIMENT_BADGE[note.aiSentiment.label]?.icon} {note.aiSentiment.label}
+                      </span>
+                    )}
                   </div>
 
                   <h4 className="note-card-title">{note.title}</h4>
@@ -227,6 +308,16 @@ export default function NotesPage() {
                       </button>
                     )}
 
+                    {!note.aiSentiment && (
+                      <button
+                        className="note-action-btn"
+                        onClick={() => handleAnalyzeSentiment(note._id)}
+                        title="Analyze session linguistic sentiment"
+                      >
+                        <Sparkles size={13} color="var(--teal)" /> AI Sentiment
+                      </button>
+                    )}
+
                     <button
                       className="note-action-btn"
                       onClick={() => setActiveNote(note)}
@@ -261,6 +352,7 @@ export default function NotesPage() {
 
 function CreateNoteModal({ clientId, onClose, onSuccess }) {
   const [sessions, setSessions] = useState([]);
+  const [showAiDraftModal, setShowAiDraftModal] = useState(false);
   const [form, setForm]         = useState({
     sessionId: '',
     noteType: 'soap',
@@ -367,6 +459,27 @@ function CreateNoteModal({ clientId, onClose, onSuccess }) {
           {/* SOAP Format */}
           {form.noteType === 'soap' && (
             <div className="note-format-box">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>SOAP Clinical Sections</span>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{
+                    fontSize: 12,
+                    padding: '4px 10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    borderColor: 'var(--teal)',
+                    color: 'var(--teal)',
+                    background: 'rgba(20,184,166,0.08)'
+                  }}
+                  onClick={() => setShowAiDraftModal(true)}
+                >
+                  <Sparkles size={13} />
+                  ✨ Generate with AI Draft
+                </button>
+              </div>
               <label>
                 Subjective (S)
                 <textarea
@@ -477,6 +590,23 @@ function CreateNoteModal({ clientId, onClose, onSuccess }) {
             </button>
           </div>
         </form>
+
+        {showAiDraftModal && (
+          <SoapDraftModal
+            onClose={() => setShowAiDraftModal(false)}
+            onAccept={(draft) => {
+              setForm((prev) => ({
+                ...prev,
+                soap: {
+                  subjective: draft.subjective || '',
+                  objective:  draft.objective || '',
+                  assessment: draft.assessment || '',
+                  plan:       draft.plan || '',
+                },
+              }));
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -544,6 +674,20 @@ function ViewNoteModal({ note, onClose }) {
               <h5>🔒 Digital Signature Hash (Tamper-Evident)</h5>
               <code>{note.signatureHash}</code>
               <p className="sig-date">Signed on {format(new Date(note.signedAt), 'dd MMM yyyy, h:mm:ss a')}</p>
+            </div>
+          )}
+
+          {note.aiSentiment && (
+            <div className="note-section" style={{ borderLeft: '3px solid var(--teal)', background: 'rgba(20,184,166,0.05)', padding: '12px 14px', borderRadius: '0 8px 8px 0' }}>
+              <h5 style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--teal)', margin: '0 0 6px 0' }}>
+                <Sparkles size={14} /> AI Sentiment &amp; Engagement Indicator
+              </h5>
+              <p style={{ margin: '0 0 4px 0', fontSize: 13 }}>
+                Linguistic Sentiment: <strong>{note.aiSentiment.label}</strong> (Score: {note.aiSentiment.score > 0 ? '+' : ''}{note.aiSentiment.score?.toFixed(2)})
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                Therapist-only indicator — derived from note text patterns. NOT a medical or clinical diagnosis.
+              </p>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, UserPlus } from 'lucide-react';
+import { Plus, UserPlus, Calendar, Clock, Check, Video } from 'lucide-react';
+import { format } from 'date-fns';
 import { leadsApi } from '../../api/leads.api';
 import toast from 'react-hot-toast';
 import '../clients/ClientsPage.css';
@@ -60,6 +61,16 @@ export default function LeadsPage() {
       fetchLeads();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Conversion failed');
+    }
+  };
+
+  const handleAcceptAppointment = async (id) => {
+    try {
+      await leadsApi.acceptAppointment(id);
+      toast.success('Appointment accepted and added to schedule! Time slot is now closed.');
+      fetchLeads();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to accept appointment');
     }
   };
 

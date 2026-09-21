@@ -39,6 +39,18 @@ api.interceptors.response.use(
           window.location.href = '/login';
         }
       }
+    } else if (error.response?.status === 403 && error.response?.data?.message?.includes('User role')) {
+      const storedRole = localStorage.getItem('unfazed_role');
+      if (storedRole === 'client' && window.location.pathname.startsWith('/therapist')) {
+        let slug = null;
+        try {
+          const storedUser = JSON.parse(localStorage.getItem('unfazed_user') || '{}');
+          slug = storedUser?.therapistId?.slug || storedUser?.therapistSlug;
+        } catch {
+          // ignore JSON parse error
+        }
+        window.location.href = slug ? `/client/${slug}/portal` : '/login';
+      }
     }
     return Promise.reject(error);
   }
