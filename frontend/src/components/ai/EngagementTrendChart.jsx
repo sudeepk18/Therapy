@@ -55,8 +55,8 @@ export default function EngagementTrendChart({ trend = [], loading }) {
             label={{ value: 'Session', position: 'insideBottom', fill: '#484F58', fontSize: 10 }}
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />
-          <ReferenceLine y={0.05}  stroke="rgba(34,197,94,0.3)"  strokeDasharray="3 3" />
-          <ReferenceLine y={-0.05} stroke="rgba(239,68,68,0.3)"  strokeDasharray="3 3" />
+          <ReferenceLine y={0.05}  stroke="rgba(34,197,94,0.2)" />
+          <ReferenceLine y={-0.05} stroke="rgba(239,68,68,0.2)" />
           <Line
             type="monotone"
             dataKey="score"

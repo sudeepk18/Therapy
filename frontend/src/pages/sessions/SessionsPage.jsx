@@ -20,13 +20,20 @@ export default function SessionsPage() {
   const [sessions,  setSessions]  = useState([]);
   const [total,     setTotal]     = useState(0);
   const [status,    setStatus]    = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await sessionsApi.list({ status, limit: 30 });
+      const params = { status, limit: 100 };
+      if (selectedMonth) {
+        const [year, month] = selectedMonth.split('-').map(Number);
+        params.startDate = new Date(year, month - 1, 1).toISOString();
+        params.endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+      }
+      const res = await sessionsApi.list(params);
       setSessions(res.data.data.sessions || []);
       setTotal(res.data.data.pagination?.total || 0);
     } catch {
@@ -38,7 +45,7 @@ export default function SessionsPage() {
 
   useEffect(() => {
     fetchSessions();
-  }, [status]);
+  }, [status, selectedMonth]);
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -73,21 +80,42 @@ export default function SessionsPage() {
     <div className="page sessions-page">
       {/* Page Header */}
       <div className="page-toolbar">
-        <div className="toolbar-filters">
-          <select
-            id="session-status-filter"
-            className="filter-select"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="no_show">No Show</option>
-          </select>
-        </div>
+          <div className="toolbar-filters">
+            <select
+              id="session-status-filter"
+              className="filter-select"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="no_show">No Show</option>
+            </select>
+
+            <div className="month-filter-wrap">
+              <input
+                type="month"
+                id="session-month-filter"
+                className="filter-select month-input"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                title="Filter sessions by month"
+              />
+              {selectedMonth && (
+                <button
+                  type="button"
+                  className="clear-filter-btn"
+                  onClick={() => setSelectedMonth('')}
+                  title="Clear month filter (Show all)"
+                >
+                  Clear Month
+                </button>
+              )}
+            </div>
+          </div>
         <div style={{ flex: 1 }} />
         <button id="book-session-btn" className="btn-primary" onClick={() => setShowModal(true)}>
           <Plus size={15} /> Book Appointment

@@ -38,6 +38,7 @@ export default function Schedule() {
   const [sessions,  setSessions]  = useState([]);
   const [total,     setTotal]     = useState(0);
   const [status,    setStatus]    = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -50,7 +51,13 @@ export default function Schedule() {
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await sessionsApi.list({ status, limit: 30 });
+      const params = { status, limit: 100 };
+      if (selectedMonth) {
+        const [year, month] = selectedMonth.split('-').map(Number);
+        params.startDate = new Date(year, month - 1, 1).toISOString();
+        params.endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+      }
+      const res = await sessionsApi.list(params);
       setSessions(res.data.data.sessions || []);
       setTotal(res.data.data.pagination?.total || 0);
     } catch {
@@ -129,7 +136,7 @@ export default function Schedule() {
     } else {
       fetchAvailability();
     }
-  }, [activeTab, status]);
+  }, [activeTab, status, selectedMonth]);
 
   useEffect(() => {
     const handleAppointmentUpdated = () => {
@@ -288,6 +295,27 @@ export default function Schedule() {
                 <option value="cancelled">Cancelled</option>
                 <option value="no_show">No Show</option>
               </select>
+
+              <div className="month-filter-wrap">
+                <input
+                  type="month"
+                  id="schedule-month-filter"
+                  className="filter-select month-input"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  title="Filter appointments by month"
+                />
+                {selectedMonth && (
+                  <button
+                    type="button"
+                    className="clear-filter-btn"
+                    onClick={() => setSelectedMonth('')}
+                    title="Clear month filter (Show all)"
+                  >
+                    Clear Month
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ flex: 1 }} />
             <button id="book-session-btn" className="btn-primary" onClick={() => setShowModal(true)}>

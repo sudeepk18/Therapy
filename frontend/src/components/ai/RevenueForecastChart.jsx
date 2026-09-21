@@ -5,8 +5,8 @@
  */
 
 import {
-  ComposedChart, Bar, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Legend, ReferenceLine,
+  ComposedChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer,
 } from 'recharts';
 import './ai-insights.css';
 
@@ -66,9 +66,6 @@ export default function RevenueForecastChart({ history = [], forecast = [], load
     );
   }
 
-  // Find where forecast starts (for reference line)
-  const splitIndex = historyPoints.length;
-
   return (
     <ResponsiveContainer width="100%" height={140}>
       <ComposedChart data={allPoints} barSize={22}>
@@ -80,24 +77,8 @@ export default function RevenueForecastChart({ history = [], forecast = [], load
         />
         <YAxis hide />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-        {splitIndex > 0 && splitIndex < allPoints.length && (
-          <ReferenceLine
-            x={allPoints[splitIndex]?.label}
-            stroke="#30363D"
-            strokeDasharray="3 3"
-            label={{ value: 'Forecast →', fill: '#8B949E', fontSize: 10 }}
-          />
-        )}
-        <Bar dataKey="revenue" fill={HISTORY_COLOR} radius={[3,3,0,0]} name="Revenue" />
-        <Line
-          type="monotone"
-          dataKey="forecastRevenue"
-          stroke={FORECAST_COLOR}
-          strokeWidth={2}
-          strokeDasharray="4 3"
-          dot={{ fill: FORECAST_COLOR, r: 3 }}
-          name="Forecast"
-        />
+        <Bar dataKey="revenue" fill={HISTORY_COLOR} radius={[3, 3, 0, 0]} name="Actual Revenue" />
+        <Bar dataKey="forecastRevenue" fill={FORECAST_COLOR} radius={[3, 3, 0, 0]} name="Forecast (Est.)" />
       </ComposedChart>
     </ResponsiveContainer>
   );

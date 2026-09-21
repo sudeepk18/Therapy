@@ -105,3 +105,45 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* Month Filter */
+.month-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-input {
+  color-scheme: dark;
+  cursor: pointer;
+  padding: 8px 12px;
+  background: var(--bg-card, #131d27);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-primary, #e2e8f0);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition, all 0.2s ease);
+}
+
+.month-input:focus {
+  border-color: var(--teal, #14b8a6);
+}
+
+.clear-filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-muted, #94a3b8);
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition, all 0.2s ease);
+}
+
+.clear-filter-btn:hover {
+  color: var(--text-primary, #ffffff);
+  border-color: var(--teal, #14b8a6);
+  background: rgba(20, 184, 166, 0.1);
+}
+
