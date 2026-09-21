@@ -64,6 +64,50 @@ const updateClientIntake = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route   GET /api/v1/clients/:id/profile
+ * @desc    Get aggregated client profile (basic info, session history, intake, consent, stats)
+ * @access  Private (Therapist)
+ */
+const getClientProfile = asyncHandler(async (req, res) => {
+  const result = await clientService.getClientProfile(req.user._id, req.params.id);
+  res.status(200).json(new ApiResponse(200, result, 'Aggregated client profile fetched'));
+});
+
+/**
+ * @route   GET /api/v1/clients/:id/intake
+ * @desc    Get client intake responses
+ * @access  Private (Therapist or Client)
+ */
+const getClientIntake = asyncHandler(async (req, res) => {
+  const therapistId = req.userRole === 'therapist' ? req.user._id : req.user.therapistId;
+  const intake = await clientService.getClientIntake(therapistId, req.params.id);
+  res.status(200).json(new ApiResponse(200, intake, 'Client intake retrieved'));
+});
+
+/**
+ * @route   GET /api/v1/clients/:id/consent
+ * @desc    Get client digital consent status
+ * @access  Private (Therapist or Client)
+ */
+const getClientConsent = asyncHandler(async (req, res) => {
+  const therapistId = req.userRole === 'therapist' ? req.user._id : req.user.therapistId;
+  const consent = await clientService.getClientConsent(therapistId, req.params.id);
+  res.status(200).json(new ApiResponse(200, consent, 'Client consent status retrieved'));
+});
+
+/**
+ * @route   POST /api/v1/clients/:id/consent
+ * @desc    Submit digital consent
+ * @access  Private (Therapist or Client)
+ */
+const submitConsent = asyncHandler(async (req, res) => {
+  const therapistId = req.userRole === 'therapist' ? req.user._id : req.user.therapistId;
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  const client = await clientService.submitConsent(therapistId, req.params.id, req.body, clientIp);
+  res.status(200).json(new ApiResponse(200, client.consent, 'Consent recorded successfully'));
+});
+
+/**
  * @route   POST /api/v1/clients/:id/discharge
  * @desc    Discharge client from care
  * @access  Private (Therapist)
@@ -78,7 +122,11 @@ module.exports = {
   createClient,
   getClients,
   getClientById,
+  getClientProfile,
   updateClient,
   updateClientIntake,
+  getClientIntake,
+  submitConsent,
+  getClientConsent,
   dischargeClient,
 };

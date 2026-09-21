@@ -19,6 +19,7 @@ const Package             = require('./Package');
 const ClientPackage       = require('./ClientPackage');
 const Lead                = require('./Lead');
 const SubscriptionTierConfig = require('./SubscriptionTierConfig');
+const AIInsight           = require('./AIInsight');
 
 module.exports = {
   Therapist,
@@ -31,4 +32,5 @@ module.exports = {
   ClientPackage,
   Lead,
   SubscriptionTierConfig,
+  AIInsight,
 };

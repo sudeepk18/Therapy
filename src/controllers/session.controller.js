@@ -7,6 +7,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
 const sessionService = require('../services/session.service');
+const { Therapist, Lead } = require('../models');
 
 /**
  * @route   POST /api/v1/sessions
@@ -95,10 +96,79 @@ const cancelSession = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, session, 'Session appointment cancelled'));
 });
 
+/**
+ * @route   POST /api/v1/sessions/public/book/:slug
+ * @desc    Public booking request — captures enquiry as a Lead.
+ *          No authentication required. The therapist reviews leads and
+ *          confirms the booking from the CRM dashboard.
+ * @access  Public
+ */
+const publicBookSession = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const {
+    clientName, clientEmail, clientPhone,
+    sessionType, medium, scheduledAt, notes, durationMinutes,
+  } = req.body;
+
+  if (!clientName || !clientEmail) {
+    throw new ApiError(400, 'Your name and email are required to request a booking');
+  }
+
+  const therapist = await Therapist.findOne({ slug, isActive: true });
+  if (!therapist) {
+    throw new ApiError(404, 'Therapist not found for this workspace');
+  }
+
+  if (!therapist.isBookingOpen) {
+    throw new ApiError(403, 'This therapist is not currently accepting new bookings');
+  }
+
+  const parsedMedium = (medium === 'online' || medium === 'video') ? 'video' :
+    (medium === 'in-person' || medium === 'in_person') ? 'in_person' :
+    (medium === 'phone' || medium === 'audio') ? 'audio' :
+    (medium === 'chat') ? 'chat' : 'video';
+
+  const duration = Number(durationMinutes) || (sessionType === 'consultation' ? 15 : 50);
+
+  // Build a descriptive enquiry message
+  const enquiryParts = [];
+  if (sessionType) enquiryParts.push(`Session type: ${sessionType}`);
+  if (medium)      enquiryParts.push(`Preferred mode: ${medium}`);
+  if (scheduledAt) enquiryParts.push(`Requested time: ${new Date(scheduledAt).toLocaleString('en-IN')}`);
+  if (notes)       enquiryParts.push(`Notes: ${notes}`);
+
+  const scheduledDate = scheduledAt ? new Date(scheduledAt) : null;
+
+  const lead = await Lead.create({
+    therapistId:      therapist._id,
+    name:             clientName,
+    email:            clientEmail.toLowerCase().trim(),
+    phone:            clientPhone || undefined,
+    enquiryMessage:   enquiryParts.join(' | ') || undefined,
+    referralSource:   'booking_page',
+    preferredMedium:  parsedMedium,
+    status:           'new',
+    priority:         'high',
+    bookingDetails: scheduledDate ? {
+      scheduledAt:     scheduledDate,
+      durationMinutes: duration,
+      sessionType:     sessionType || 'individual',
+      medium:          parsedMedium,
+      notes:           notes || '',
+      status:          'pending',
+    } : undefined,
+  });
+
+  res.status(201).json(
+    new ApiResponse(201, { leadId: lead._id, bookingDetails: lead.bookingDetails }, 'Booking request received! The therapist will review and confirm your appointment.')
+  );
+});
+
 module.exports = {
   bookSession,
   getSessions,
   getSessionById,
   updateSessionStatus,
   cancelSession,
+  publicBookSession,
 };

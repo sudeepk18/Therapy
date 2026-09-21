@@ -23,7 +23,20 @@ const bookSession = async (sessionData) => {
     throw new ApiError(400, 'Invalid scheduledAt date format.');
   }
 
-  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+  const parsedDuration = parseInt(durationMinutes, 10) || 50;
+  const end = new Date(start.getTime() + parsedDuration * 60 * 1000);
+
+  // Normalize medium to schema enum ('video', 'audio', 'in_person', 'chat')
+  const mediumMap = {
+    'online': 'video',
+    'video': 'video',
+    'in-person': 'in_person',
+    'in_person': 'in_person',
+    'phone': 'audio',
+    'audio': 'audio',
+    'chat': 'chat',
+  };
+  const normalizedMedium = mediumMap[String(medium || '').toLowerCase().trim()] || 'video';
 
   // 2. Check for conflicting scheduled sessions for this therapist
   const conflict = await Session.findOne({
@@ -65,6 +78,8 @@ const bookSession = async (sessionData) => {
   const previousSessionCount = await Session.countDocuments({ therapistId, clientId });
   const sessionNumber = previousSessionCount + 1;
 
+  const preSessionNotes = sessionData.preSessionNotes || sessionData.notes || '';
+
   // 4. Create Session
   const session = await Session.create({
     therapistId,
@@ -72,14 +87,15 @@ const bookSession = async (sessionData) => {
     clientPackageId: packageRef ? packageRef._id : null,
     scheduledAt: start,
     scheduledEndAt: end,
-    durationMinutes,
-    medium,
+    durationMinutes: parsedDuration,
+    medium: normalizedMedium,
     sessionType,
     sessionNumber,
     isPaidViaPackage,
     feeAmount: feeAmount || 0,
     currency: currency || 'INR',
     status: 'scheduled',
+    preSessionNotes,
   });
 
   return session;

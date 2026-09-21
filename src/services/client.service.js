@@ -159,6 +159,78 @@ const updateClientIntake = async (therapistId, clientId, intakeData) => {
 };
 
 /**
+ * Submit / Update Digital Consent
+ */
+const submitConsent = async (therapistId, clientId, consentData, clientIp = '') => {
+  const client = await Client.findOne({ _id: clientId, therapistId });
+  if (!client) {
+    throw new ApiError(404, 'Client not found or access denied.');
+  }
+
+  const { isConsentAccepted, consentSignatureName, consentVersion = '1.0' } = consentData;
+
+  client.consent = {
+    isConsentAccepted: Boolean(isConsentAccepted),
+    consentAcceptedAt: isConsentAccepted ? new Date() : null,
+    consentSignatureName: consentSignatureName || client.name,
+    consentVersion,
+    consentIp: clientIp,
+  };
+
+  await client.save();
+  return client;
+};
+
+/**
+ * Get Client Intake Information
+ */
+const getClientIntake = async (therapistId, clientId) => {
+  const client = await Client.findOne({ _id: clientId, therapistId }).select('name email intake');
+  if (!client) {
+    throw new ApiError(404, 'Client not found or access denied.');
+  }
+  return client.intake;
+};
+
+/**
+ * Get Client Digital Consent Status
+ */
+const getClientConsent = async (therapistId, clientId) => {
+  const client = await Client.findOne({ _id: clientId, therapistId }).select('name email consent');
+  if (!client) {
+    throw new ApiError(404, 'Client not found or access denied.');
+  }
+  return client.consent;
+};
+
+/**
+ * Aggregated full client profile (basic info, session history, intake, consent, stats)
+ */
+const getClientProfile = async (therapistId, clientId) => {
+  const client = await Client.findOne({ _id: clientId, therapistId });
+  if (!client) {
+    throw new ApiError(404, 'Client not found or access denied.');
+  }
+
+  const sessions = await Session.find({ clientId, therapistId }).sort({ scheduledAt: -1 });
+  const completedSessions = sessions.filter(s => s.status === 'completed');
+  const upcomingSessions = sessions.filter(s => s.status === 'scheduled' && new Date(s.scheduledAt) >= new Date());
+
+  return {
+    client,
+    intake: client.intake,
+    consent: client.consent,
+    sessions,
+    stats: {
+      totalSessions: sessions.length,
+      completedCount: completedSessions.length,
+      upcomingCount: upcomingSessions.length,
+      nextSession: upcomingSessions[0] || null,
+    },
+  };
+};
+
+/**
  * Discharge client from active care
  */
 const dischargeClient = async (therapistId, clientId, dischargeNotes = '') => {
@@ -183,7 +255,11 @@ module.exports = {
   createClient,
   getClients,
   getClientById,
+  getClientProfile,
   updateClient,
   updateClientIntake,
+  getClientIntake,
+  submitConsent,
+  getClientConsent,
   dischargeClient,
 };

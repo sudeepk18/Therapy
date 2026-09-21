@@ -26,25 +26,36 @@ const app = express();
 // ─── Security Middleware ──────────────────────────────────────────────────────
 app.use(helmet());          // Sets secure HTTP headers
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow any localhost port in development (handles Vite port changes)
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+    const allowed = process.env.CLIENT_URL || 'http://localhost:3000';
+    if (origin === allowed) return callback(null, true);
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true,
 }));
 
 // ─── Rate Limiting ────────────────────────────────────────────────────────────
-// Global limiter: 200 requests per 15 minutes per IP
+// In development, relax limits significantly to prevent blocking local dev/testing
+const isDev = process.env.NODE_ENV === 'development';
+
+// Global limiter: 200 requests per 15 minutes per IP (10,000 in dev)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: isDev ? 10000 : 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 
-// Strict limiter for auth routes: 10 attempts per hour per IP
+// Strict limiter for auth routes: 10 attempts per hour per IP (1,000 in dev)
 // Prevents brute-force attacks on login/register
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: isDev ? 1000 : 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many auth attempts. Please try again after 1 hour.' },
@@ -81,6 +92,9 @@ app.use('/api/v1/sessions',      require('./src/routes/session.routes'));
 app.use('/api/v1/session-notes', require('./src/routes/sessionNote.routes'));
 app.use('/api/v1/packages',      require('./src/routes/package.routes'));
 app.use('/api/v1/payments',      require('./src/routes/payment.routes'));
+app.use('/api/v1/therapist',     require('./src/routes/therapist.routes'));
+app.use('/api/v1/portal',        require('./src/routes/client.portal.routes'));
+app.use('/api/v1/ai',            require('./src/routes/ai.routes'));
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {

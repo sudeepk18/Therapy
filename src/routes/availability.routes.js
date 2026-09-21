@@ -8,8 +8,9 @@ const router = express.Router();
 const availabilityController = require('../controllers/availability.controller');
 const { protect, restrictTo } = require('../middleware/auth.middleware');
 
-// Public endpoint to query free booking slots for a therapist on a date
+// Public endpoints to query free booking slots for a therapist on a date
 router.get('/slots', availabilityController.getAvailableSlots);
+router.get('/public/:slug', availabilityController.getPublicSlotsBySlug);
 
 // Protected therapist routes
 router.use(protect);

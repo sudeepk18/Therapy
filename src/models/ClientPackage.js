@@ -141,7 +141,7 @@ ClientPackageSchema.index({ expiresAt: 1, status: 1 }, { sparse: true }); // Exp
 // ─── Pre-save Middleware ─────────────────────────────────────────────────────
 
 // Keep sessionsRemaining in sync and auto-update status
-ClientPackageSchema.pre('save', function (next) {
+ClientPackageSchema.pre('save', function () {
   // Recompute remaining sessions
   this.sessionsRemaining = this.totalSessions - this.sessionsUsed;
 
@@ -154,8 +154,6 @@ ClientPackageSchema.pre('save', function (next) {
   if (this.expiresAt && this.expiresAt < new Date() && this.status === 'active') {
     this.status = 'expired';
   }
-
-  next();
 });
 
 // ─── Virtuals ────────────────────────────────────────────────────────────────
