@@ -12,21 +12,54 @@
 
 const mongoose = require('mongoose');
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 /**
  * Connect to MongoDB using the MONGO_URI environment variable.
- * Exits the process if the connection cannot be established on startup.
+ * Reuses active connection pool across serverless invocations (Vercel).
  *
- * @returns {Promise<void>}
+ * @returns {Promise<typeof mongoose>}
  */
 const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI) 
-
-    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ MongoDB connection error: ${error.message}`);
-    process.exit(1); // Exit with failure – let the process manager restart
+  const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  if (!uri) {
+    console.warn('⚠️ MONGO_URI environment variable is missing.');
+    return null;
   }
+
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 8000,
+    };
+
+    cached.promise = mongoose.connect(uri, opts).then((m) => {
+      console.log(`✅ MongoDB connected: ${m.connection.host}`);
+      return m;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (error) {
+    cached.promise = null;
+    console.error(`❌ MongoDB connection error: ${error.message}`);
+    if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
+    throw error;
+  }
+
+  return cached.conn;
 };
 
 // ─── Connection Event Listeners ──────────────────────────────────────────────

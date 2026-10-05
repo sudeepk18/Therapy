@@ -23,6 +23,16 @@ connectDB();
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express();
 
+// ─── Database Middleware (ensures connection before handling requests) ──────
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── Security Middleware ──────────────────────────────────────────────────────
 app.use(helmet());          // Sets secure HTTP headers
 app.use(cors({
@@ -31,8 +41,14 @@ app.use(cors({
     if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
       return callback(null, true);
     }
-    const allowed = process.env.CLIENT_URL || 'http://localhost:3000';
-    if (origin === allowed) return callback(null, true);
+    const allowed = process.env.CLIENT_URL;
+    if (allowed && (origin === allowed || origin === allowed.replace(/\/$/, ''))) {
+      return callback(null, true);
+    }
+    // Allow any Vercel deployment (preview or production)
+    if (/\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
     callback(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true,
@@ -99,6 +115,7 @@ app.use('/api/v1/notifications', require('./src/routes/notification.routes'));
 app.use('/api/v1/cbt',           require('./src/routes/cbt.routes'));
 app.use('/api/v1/crisis',        require('./src/routes/crisis.routes'));
 app.use('/api/v1/trajectory',    require('./src/routes/trajectory.routes'));
+app.use('/api/v1/cron',          require('./src/routes/cron.routes'));
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {
@@ -124,14 +141,16 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
+// ─── Start Server (standalone / local development) ────────────────────────────
 const PORT = process.env.PORT || 5000;
 const { startReminderScheduler } = require('./src/services/reminder.service');
 
-app.listen(PORT, () => {
-  console.log(`🚀 Unfazed API running on http://localhost:${PORT} [${process.env.NODE_ENV}]`);
-  // Start session reminders background scheduler
-  startReminderScheduler();
-});
+if (process.env.VERCEL !== '1' && require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Unfazed API running on http://localhost:${PORT} [${process.env.NODE_ENV}]`);
+    // Start session reminders background scheduler
+    startReminderScheduler();
+  });
+}
 
 module.exports = app;
