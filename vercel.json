@@ -29,11 +29,5 @@
         "service": "frontend"
       }
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/v1/cron/reminders",
-      "schedule": "*/5 * * * *"
-    }
   ]
 }
