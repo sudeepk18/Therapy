@@ -1,0 +1,146 @@
+/* ── Recovery Trajectory Styles ──────────────────────────────────────────── */
+
+.rt-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.rt-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.85rem;
+}
+.rt-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+.rt-empty-icon {
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+.rt-empty h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #334155);
+  margin: 0 0 0.3rem;
+}
+.rt-empty p {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+  max-width: 320px;
+  margin-inline: auto;
+  line-height: 1.5;
+}
+
+/* Header */
+.rt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.rt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.rt-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.rt-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+.rt-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0.1rem 0 0;
+}
+
+/* Direction Badge */
+.rt-direction-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.rt-improvement {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Chart */
+.rt-chart-wrap {
+  margin: 0 -0.5rem;
+}
+
+/* Legend */
+.rt-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.65rem;
+  justify-content: center;
+}
+.rt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #64748b);
+}
+.rt-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.rt-legend-line {
+  width: 16px;
+  border-top: 2px dashed;
+}
+
+/* Tooltip */
+.rt-tooltip {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.rt-tooltip p { margin: 0.15rem 0; }
+.rt-tooltip-date {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem !important;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

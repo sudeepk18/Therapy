@@ -1,4 +1,6 @@
-/* Shared styles for Login & Register pages */
+/* ============================================================
+   UNFAZED — Auth Pages Styles (Login & Register)
+   ============================================================ */
 
 .auth-page {
   display: flex;
@@ -6,24 +8,26 @@
 }
 
 .auth-heading {
-  font-size: 22px;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.4px;
-  margin-bottom: 4px;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
 }
 
 .auth-subheading {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-secondary);
   margin-bottom: 28px;
+  line-height: 1.5;
 }
 
 /* Form */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .auth-field {
@@ -33,9 +37,10 @@
 }
 
 .auth-label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-secondary);
+  letter-spacing: 0.01em;
 }
 
 .auth-input-wrap {
@@ -46,10 +51,11 @@
 
 .auth-input-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   color: var(--text-muted);
   pointer-events: none;
   flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 
 .auth-input {
@@ -57,7 +63,7 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 10px 12px 10px 36px;
+  padding: 11px 14px 11px 40px;
   color: var(--text-primary);
   font-size: 14px;
   transition: var(--transition);
@@ -70,52 +76,69 @@
 
 .auth-input:focus {
   border-color: var(--teal);
-  box-shadow: 0 0 0 3px var(--teal-glow);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--teal-glow-strong), 0 0 16px var(--teal-glow);
+}
+
+.auth-input-wrap:focus-within .auth-input-icon {
+  color: var(--teal);
 }
 
 .auth-input--pass {
-  padding-right: 40px;
+  padding-right: 44px;
 }
 
 .auth-eye {
   position: absolute;
-  right: 12px;
+  right: 14px;
   background: none;
   border: none;
   color: var(--text-muted);
   display: flex;
   align-items: center;
   transition: var(--transition);
+  cursor: pointer;
 }
+
 .auth-eye:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* CTA button */
 .auth-btn {
   width: 100%;
-  padding: 11px;
-  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
-  color: white;
+  padding: 12px;
+  background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+  color: #FFFFFF;
   font-size: 14px;
-  font-weight: 600;
-  border: none;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-md);
   transition: var(--transition);
-  margin-top: 4px;
+  margin-top: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.35);
 }
+
 .auth-btn:hover:not(:disabled) {
-  opacity: 0.9;
+  background: linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%);
+  box-shadow: 0 6px 24px rgba(6, 182, 212, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px var(--teal-glow);
 }
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
 .auth-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Switch */
@@ -123,19 +146,21 @@
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .auth-link {
   color: var(--teal);
-  font-weight: 500;
+  font-weight: 600;
   transition: var(--transition);
 }
+
 .auth-link:hover {
-  color: var(--text-primary);
+  color: #22D3EE;
+  text-decoration: underline;
 }
 
 /* Spinner */
 .spin-icon {
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.75s linear infinite;
 }

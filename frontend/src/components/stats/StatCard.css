@@ -1,61 +1,164 @@
+/* ============================================================
+   UNFAZED — Glassmorphism Stat Card
+   ============================================================ */
+
 .stat-card {
-  background: var(--bg-surface);
+  background: var(--bg-glass-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 22px;
   transition: var(--transition);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
 }
 
-.stat-card::before {
-  content: '';
+/* Ambient corner glow */
+.stat-card-glow {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 70%, rgba(20,184,166,0.04));
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
   pointer-events: none;
+  opacity: 0.12;
+  filter: blur(30px);
+  transition: opacity 0.3s ease;
+}
+
+/* Top accent highlight bar */
+.stat-card-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card--teal .stat-card-glow,
+.stat-card--teal .stat-card-top-bar {
+  background: linear-gradient(90deg, #06B6D4, transparent);
+}
+.stat-card--violet .stat-card-glow,
+.stat-card--violet .stat-card-top-bar {
+  background: linear-gradient(90deg, #8B5CF6, transparent);
+}
+.stat-card--success .stat-card-glow,
+.stat-card--success .stat-card-top-bar {
+  background: linear-gradient(90deg, #10B981, transparent);
+}
+.stat-card--warning .stat-card-glow,
+.stat-card--warning .stat-card-top-bar {
+  background: linear-gradient(90deg, #F59E0B, transparent);
+}
+.stat-card--danger .stat-card-glow,
+.stat-card--danger .stat-card-top-bar {
+  background: linear-gradient(90deg, #F43F5E, transparent);
 }
 
 .stat-card:hover {
-  border-color: rgba(20, 184, 166, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  transform: translateY(-3px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
 }
 
+.stat-card:hover .stat-card-glow {
+  opacity: 0.28;
+}
+
+.stat-card:hover .stat-card-top-bar {
+  opacity: 1;
+}
+
+.stat-card--teal:hover {
+  box-shadow: 0 12px 30px -4px rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.stat-card--violet:hover {
+  box-shadow: 0 12px 30px -4px rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.stat-card--success:hover {
+  box-shadow: 0 12px 30px -4px rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.stat-card--warning:hover {
+  box-shadow: 0 12px 30px -4px rgba(245, 158, 11, 0.25);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ── Content Layout ─────────────────────────────────────────── */
 .stat-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .stat-label {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
 }
 
 .stat-icon-wrap {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
+  border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover .stat-icon-wrap {
+  transform: scale(1.08);
+}
+
+.stat-middle {
+  margin-bottom: 12px;
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.8px;
-  line-height: 1;
-  margin-bottom: 6px;
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 
-.stat-trend {
+.stat-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.stat-trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+}
+
+.stat-trend-icon {
+  color: var(--teal);
 }

@@ -118,8 +118,8 @@ export default function ClientsPage() {
 
         <div style={{ flex: 1 }} />
 
-        <button id="add-client-btn" className="btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={15} /> Add New Client
+        <button id="add-client-btn" className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <Plus size={16} strokeWidth={2.4} /> Add New Client
         </button>
       </div>
 

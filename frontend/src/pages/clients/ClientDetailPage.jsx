@@ -4,7 +4,9 @@ import {
   ArrowLeft, Mail, Phone, Calendar, Tag, Users,
   FileText, ShieldCheck, HeartPulse, AlertCircle,
   Clock, CheckCircle2, UserX, Send, Copy, X, ExternalLink,
+  Globe, KeyRound,
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { clientsApi } from '../../api/clients.api';
 import { sessionsApi } from '../../api/sessions.api';
 import { authApi } from '../../api/auth.api';
@@ -13,6 +15,8 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import '../clients/ClientsPage.css';
 import './ClientDetail.css';
+import RecoveryTrajectory from '../../components/trajectory/RecoveryTrajectory';
+import CBTHomeworkSummary from '../../components/cbt/CBTHomeworkSummary';
 
 const TAG_CONFIG = {
   low_risk:      { color: 'var(--success)', bg: 'var(--success-bg)', label: 'Low Risk' },
@@ -36,6 +40,19 @@ export default function ClientDetailPage() {
   const [inviting,    setInviting]    = useState(false);
   const [inviteLink,  setInviteLink]  = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+
+  const { user } = useAuth();
+  const therapistSlug = user?.slug || user?.therapistId?.slug || user?.therapistSlug || '';
+  const portalLoginUrl = therapistSlug ? `${window.location.origin}/client/${therapistSlug}/login` : '';
+
+  const copyLoginLink = () => {
+    if (!portalLoginUrl) {
+      toast.error('Workspace slug not configured in Settings');
+      return;
+    }
+    navigator.clipboard.writeText(portalLoginUrl);
+    toast.success('Client Portal Login link copied to clipboard!');
+  };
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -143,23 +160,49 @@ export default function ClientDetailPage() {
         </div>
 
         {client.status !== 'discharged' && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              id="send-portal-invite-btn"
-              type="button"
-              className="btn-secondary"
-              onClick={handleInvite}
-              disabled={inviting}
-              style={{ color: 'var(--teal)' }}
-            >
-              <Send size={14} />
-              {inviting ? 'Generating…' : client.hasPortalAccess ? 'Re-send Invite' : 'Send Portal Invite'}
-            </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            {client.hasPortalAccess ? (
+              <>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={copyLoginLink}
+                  style={{ gap: 6 }}
+                  title="Copy permanent portal login URL for client to sign in with their existing password"
+                >
+                  <Globe size={14} /> Copy Portal Login Link
+                </button>
+                <button
+                  id="send-portal-invite-btn"
+                  type="button"
+                  className="btn-secondary"
+                  onClick={handleInvite}
+                  disabled={inviting}
+                  style={{ gap: 6 }}
+                  title="Generate a password reset link if the client forgot their password"
+                >
+                  <KeyRound size={14} /> {inviting ? 'Generating…' : 'Reset Password / Re-send'}
+                </button>
+              </>
+            ) : (
+              <button
+                id="send-portal-invite-btn"
+                type="button"
+                className="btn-primary"
+                onClick={handleInvite}
+                disabled={inviting}
+                style={{ gap: 6 }}
+              >
+                <Send size={14} />
+                {inviting ? 'Generating…' : 'Send Portal Invite'}
+              </button>
+            )}
+
             <button
               type="button"
               className="btn-secondary"
               onClick={() => setShowDischargeModal(true)}
-              style={{ color: 'var(--danger)' }}
+              style={{ color: 'var(--danger)', gap: 6 }}
             >
               <UserX size={14} /> Discharge Client
             </button>
@@ -234,6 +277,12 @@ export default function ClientDetailPage() {
               <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No emergency contact recorded.</p>
             )}
           </div>
+
+          {/* Recovery Trajectory Chart */}
+          <RecoveryTrajectory clientId={id} />
+
+          {/* CBT Between-Session Homework Summary */}
+          <CBTHomeworkSummary clientId={id} />
         </div>
       )}
 
@@ -404,13 +453,13 @@ export default function ClientDetailPage() {
         </div>
       )}
 
-      {/* Portal Invite Modal */}
-      {showInviteModal && inviteLink && (
+      {/* Portal Access & Invite Modal */}
+      {showInviteModal && (
         <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <h3 className="modal-title" style={{ color: 'var(--teal)', margin: 0 }}>
-                Portal Invite Link
+                Client Portal Access Links
               </h3>
               <button
                 type="button"
@@ -421,43 +470,82 @@ export default function ClientDetailPage() {
               </button>
             </div>
 
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.6 }}>
-              Share this link with <strong>{client.name}</strong> so they can set their password and access their client portal.
-              The link expires in <strong>72 hours</strong>.
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
+              Manage access for <strong>{client.name}</strong> ({client.email}).
             </p>
 
-            <div style={{
-              background: '#111117',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              padding: '12px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              marginBottom: 16,
-            }}>
-              <code style={{ flex: 1, fontSize: 11.5, color: 'var(--text-secondary)', wordBreak: 'break-all', lineHeight: 1.5 }}>
-                {inviteLink}
-              </code>
-              <button
-                id="copy-invite-link-btn"
-                type="button"
-                onClick={copyInviteLink}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  background: 'var(--teal-glow)', color: 'var(--teal)',
-                  border: '1px solid var(--teal)', borderRadius: 8,
-                  padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  whiteSpace: 'nowrap', flexShrink: 0,
-                }}
-              >
-                <Copy size={12} /> Copy
-              </button>
+            {/* Link 1: Direct Login for Returning Clients */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <Globe size={14} color="var(--teal)" />
+                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Permanent Client Portal Login URL
+                </label>
+              </div>
+              <div style={{
+                background: 'var(--bg-elevated)',
+                border: '1px solid rgba(6, 182, 212, 0.3)',
+                borderRadius: 10,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 6,
+              }}>
+                <code style={{ flex: 1, fontSize: 12, color: 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.5 }}>
+                  {portalLoginUrl}
+                </code>
+                <button
+                  type="button"
+                  onClick={copyLoginLink}
+                  className="btn-primary"
+                  style={{ padding: '6px 12px', fontSize: 12, gap: 4, flexShrink: 0 }}
+                >
+                  <Copy size={12} /> Copy
+                </button>
+              </div>
+              <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: 0 }}>
+                💡 <strong>Send this link</strong> if the client already created their password and wants to sign in again.
+              </p>
             </div>
 
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-              💡 Email sending is not yet configured — copy this link and send it to {client.name} via WhatsApp or email.
-            </p>
+            {/* Link 2: One-time Invite / Password Setup */}
+            {inviteLink && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <KeyRound size={14} color="var(--violet)" />
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--violet)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    One-Time Password Setup / Reset URL
+                  </label>
+                </div>
+                <div style={{
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 10,
+                  padding: '10px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginBottom: 6,
+                }}>
+                  <code style={{ flex: 1, fontSize: 11.5, color: 'var(--text-secondary)', wordBreak: 'break-all', lineHeight: 1.5 }}>
+                    {inviteLink}
+                  </code>
+                  <button
+                    id="copy-invite-link-btn"
+                    type="button"
+                    onClick={copyInviteLink}
+                    className="btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: 12, gap: 4, flexShrink: 0 }}
+                  >
+                    <Copy size={12} /> Copy
+                  </button>
+                </div>
+                <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: 0 }}>
+                  ⏳ Only for first-time password creation or if the client needs to reset their password (expires in 72h).
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

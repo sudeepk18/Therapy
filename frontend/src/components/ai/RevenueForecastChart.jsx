@@ -44,15 +44,15 @@ export default function RevenueForecastChart({ history = [], forecast = [], load
   }
 
   // Merge history + forecast for the chart
-  const historyPoints = history.slice(-6).map(h => ({
-    label: `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][h.month - 1]} ${String(h.year).slice(2)}`,
-    revenue: h.revenue,
+  const historyPoints = (history || []).slice(-6).map(h => ({
+    label: h.month_label || (h.month ? `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][h.month - 1]} ${String(h.year).slice(2)}` : (h.label || '')),
+    revenue: h.revenue ?? h.amount ?? 0,
     isForecast: false,
   }));
 
-  const forecastPoints = forecast.map(f => ({
-    label: f.month_label,
-    forecastRevenue: f.forecast,
+  const forecastPoints = (forecast || []).map(f => ({
+    label: f.month_label || f.month || '',
+    forecastRevenue: f.forecast ?? f.predicted ?? 0,
     isForecast: true,
   }));
 

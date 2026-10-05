@@ -94,8 +94,8 @@ export default function PaymentsPage() {
           </select>
         </div>
         <div style={{ flex: 1 }} />
-        <button id="record-payment-btn" className="btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={15} /> Record Manual Payment
+        <button id="record-payment-btn" className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <Plus size={16} strokeWidth={2.4} /> Record Manual Payment
         </button>
       </div>
 

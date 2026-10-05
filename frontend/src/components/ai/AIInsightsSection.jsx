@@ -59,7 +59,7 @@ export default function AIInsightsSection() {
 
   const aiOffline = !loading && !insights && !forecast;
   const highRiskSessions = insights?.noShow?.highRiskSessions || [];
-  const scheduling       = insights?.scheduling?.recommendations || [];
+  const scheduling       = insights?.scheduling?.recommendations || insights?.scheduling?.recommendedSlots || [];
 
   return (
     <div className="dashboard-card ai-insights-section">
@@ -217,12 +217,12 @@ export default function AIInsightsSection() {
                     <div className="slot-rec-list">
                       {scheduling.slice(0, 4).map((slot, i) => (
                         <div className="slot-rec-item" key={i}>
-                          <span className="slot-rec-day">{slot.day_name}</span>
-                          <span className="slot-rec-time">{slot.time_label}</span>
+                          <span className="slot-rec-day">{slot.day_name || slot.dayOfWeek}</span>
+                          <span className="slot-rec-time">{slot.time_label || slot.time}</span>
                           <div className="slot-score-bar">
                             <div
                               className="slot-score-fill"
-                              style={{ width: `${Math.round(slot.score * 100)}%` }}
+                              style={{ width: `${Math.round((slot.score || 0.5) * 100)}%` }}
                             />
                           </div>
                           <span className="slot-rec-reason" title={slot.reason}>

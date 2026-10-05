@@ -1,89 +1,201 @@
+/* ============================================================
+   UNFAZED — Dashboard Page Styles
+   ============================================================ */
+
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
-/* Greeting */
+/* ── Hero Greeting Row ──────────────────────────────────────── */
+.dashboard-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+
 .dashboard-greeting {
-  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
+
 .greeting-text {
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
 }
+
 .greeting-name {
-  background: linear-gradient(90deg, var(--teal), var(--violet));
+  background: linear-gradient(135deg, #22D3EE 0%, #06B6D4 50%, #C084FC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.greeting-sub {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 4px;
+
+.greeting-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* Stat Cards Row */
+.greeting-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal);
+  background: var(--teal-glow);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.greeting-cal-icon {
+  color: var(--teal);
+}
+
+.greeting-dot {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.greeting-summary {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-action-btn {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+
+/* ── Stat Cards Row ─────────────────────────────────────────── */
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 18px;
 }
 
-@media (max-width: 1100px) {
-  .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1200px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* Main Grid */
+@media (max-width: 640px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Main Grid ──────────────────────────────────────────────── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 20px;
+  grid-template-columns: 1fr 400px;
+  gap: 22px;
 }
 
 @media (max-width: 1100px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Card */
+/* ── Glass Dashboard Card ───────────────────────────────────── */
 .dashboard-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 24px;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  gap: 12px;
 }
 
 .card-title-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.card-title-icon {
+.card-icon-halo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid;
+}
+
+.card-icon-halo--teal {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.25);
   color: var(--teal);
 }
 
+.card-icon-halo--violet {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: var(--violet);
+}
+
 .card-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.card-subtitle {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .card-badge {
   font-size: 11px;
-  padding: 3px 8px;
+  font-weight: 600;
+  padding: 3px 10px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 99px;
+  border-radius: var(--radius-pill);
   color: var(--text-secondary);
+}
+
+.card-header-link {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--teal);
+  transition: var(--transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.card-header-link:hover {
+  background: var(--teal-glow);
+  color: #22D3EE;
 }

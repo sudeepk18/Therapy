@@ -140,6 +140,9 @@ export default function AppRoutes() {
         <Route path="portal"
           element={<RequireClient><ClientDashboard /></RequireClient>}
         />
+        <Route path="dashboard"
+          element={<RequireClient><ClientDashboard /></RequireClient>}
+        />
       </Route>
 
       {/* ── Direct Branded Vanity Routes (e.g. /:slug and /:slug/booking) */}

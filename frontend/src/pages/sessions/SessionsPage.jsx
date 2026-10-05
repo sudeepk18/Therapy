@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Calendar, Video, MapPin, Clock, CheckCircle } from 'lucide-react';
+import { Plus, Search, Calendar, Video, MapPin, Clock, CheckCircle, Copy, ExternalLink } from 'lucide-react';
 import { sessionsApi } from '../../api/sessions.api';
 import { clientsApi } from '../../api/clients.api';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import NoShowRiskBadge from '../../components/ai/NoShowRiskBadge';
+import SendVideoLinkModal from '../../components/sessions/SendVideoLinkModal';
 import '../clients/ClientsPage.css';
 import './SessionsPage.css';
 
@@ -16,6 +17,20 @@ const STATUS_COLORS = {
   'no-show':    { color: 'var(--warning)', bg: 'var(--warning-bg)' },
 };
 
+const generateMonthOptions = () => {
+  const list = [];
+  const now = new Date();
+  for (let i = -6; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    list.push({ value, label });
+  }
+  return list;
+};
+
+const MONTH_OPTIONS = generateMonthOptions();
+
 export default function SessionsPage() {
   const [sessions,  setSessions]  = useState([]);
   const [total,     setTotal]     = useState(0);
@@ -23,6 +38,8 @@ export default function SessionsPage() {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [selectedVideoSession, setSelectedVideoSession] = useState(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -95,30 +112,23 @@ export default function SessionsPage() {
               <option value="no_show">No Show</option>
             </select>
 
-            <div className="month-filter-wrap">
-              <input
-                type="month"
-                id="session-month-filter"
-                className="filter-select month-input"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                title="Filter sessions by month"
-              />
-              {selectedMonth && (
-                <button
-                  type="button"
-                  className="clear-filter-btn"
-                  onClick={() => setSelectedMonth('')}
-                  title="Clear month filter (Show all)"
-                >
-                  Clear Month
-                </button>
-              )}
-            </div>
+            <select
+              id="session-month-filter"
+              className="filter-select"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="">All Months</option>
+              {MONTH_OPTIONS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
           </div>
         <div style={{ flex: 1 }} />
-        <button id="book-session-btn" className="btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={15} /> Book Appointment
+        <button id="book-session-btn" className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <Plus size={16} strokeWidth={2.4} /> Book Appointment
         </button>
       </div>
 
@@ -139,6 +149,7 @@ export default function SessionsPage() {
                 <th>Status</th>
                 <th>Fee &amp; Payment</th>
                 <th>Risk</th>
+                <th>Video Link</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -146,7 +157,7 @@ export default function SessionsPage() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
-                    {Array.from({ length: 9 }).map((__, j) => (
+                    {Array.from({ length: 10 }).map((__, j) => (
                       <td key={j}>
                         <div className="skeleton" style={{ height: 14, borderRadius: 4, width: 80 }} />
                       </td>
@@ -155,7 +166,7 @@ export default function SessionsPage() {
                 ))
               ) : sessions.length === 0 ? (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={10}>
                     <div className="table-empty">
                       <Calendar size={32} />
                       <p>No sessions scheduled yet</p>
@@ -179,8 +190,8 @@ export default function SessionsPage() {
                       </td>
                       <td className="text-secondary">
                         <span className="session-medium-chip">
-                          {s.medium === 'online' ? <Video size={13} /> : <MapPin size={13} />}
-                          {s.medium || 'in-person'}
+                          {s.medium === 'online' || s.medium === 'video' ? <Video size={13} /> : <MapPin size={13} />}
+                          {s.medium === 'online' || s.medium === 'video' ? 'Online Video' : s.medium || 'in-person'}
                         </span>
                       </td>
                       <td className="text-secondary capitalize">{s.sessionType ? s.sessionType.replace('_', ' ') : 'individual'}</td>
@@ -229,6 +240,70 @@ export default function SessionsPage() {
                         }
                       </td>
                       <td>
+                        {s.medium === 'video' || s.medium === 'online' ? (
+                          s.meetingLink || s.videoCall?.joinUrl ? (
+                            <div className="video-link-cell">
+                              <button
+                                type="button"
+                                className="video-link-status-badge video-link-status-badge--sent"
+                                onClick={() => {
+                                  setSelectedVideoSession(s);
+                                  setShowVideoModal(true);
+                                }}
+                                title="Click to edit or resend meeting link"
+                              >
+                                <Video size={12} />
+                                <span>Link Sent</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="video-link-icon-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const link = s.meetingLink || s.videoCall?.joinUrl;
+                                  navigator.clipboard.writeText(link);
+                                  toast.success('Meeting link copied!');
+                                }}
+                                title="Copy video meeting link"
+                              >
+                                <Copy size={13} />
+                              </button>
+                              <a
+                                href={s.meetingLink || s.videoCall?.joinUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="video-link-icon-btn"
+                                title="Join call in new tab"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink size={13} />
+                              </a>
+                            </div>
+                          ) : (
+                            (() => {
+                              const diffHours = (new Date(s.scheduledAt).getTime() - Date.now()) / (1000 * 60 * 60);
+                              const isUrgent = diffHours > 0 && diffHours <= 1;
+                              return (
+                                <button
+                                  type="button"
+                                  className={`video-send-link-btn ${isUrgent ? 'video-send-link-btn--urgent' : ''}`}
+                                  onClick={() => {
+                                    setSelectedVideoSession(s);
+                                    setShowVideoModal(true);
+                                  }}
+                                  title={isUrgent ? 'Session starts within 1 hr! Send link now' : 'Send online video link to client'}
+                                >
+                                  <Video size={13} />
+                                  <span>{isUrgent ? '⚡ Send Link (<1h)' : '+ Send Link'}</span>
+                                </button>
+                              );
+                            })()
+                          )
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>—</span>
+                        )}
+                      </td>
+                      <td>
                         <div className="session-actions">
                           {s.status === 'scheduled' && (
                             <>
@@ -268,6 +343,22 @@ export default function SessionsPage() {
           onSuccess={() => {
             setShowModal(false);
             fetchSessions();
+          }}
+        />
+      )}
+
+      {showVideoModal && (
+        <SendVideoLinkModal
+          session={selectedVideoSession}
+          isOpen={showVideoModal}
+          onClose={() => {
+            setShowVideoModal(false);
+            setSelectedVideoSession(null);
+          }}
+          onSuccess={(updatedSession) => {
+            setSessions((prev) =>
+              prev.map((item) => (item._id === updatedSession._id ? updatedSession : item))
+            );
           }}
         />
       )}

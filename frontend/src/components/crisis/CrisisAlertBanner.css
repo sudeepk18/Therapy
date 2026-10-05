@@ -1,0 +1,209 @@
+/* ── Crisis Alert Banner Styles ──────────────────────────────────────────── */
+
+.cab-wrapper {
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+.cab-wrapper--critical {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1.5px solid #fca5a5;
+}
+.cab-wrapper--high {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #fcd34d;
+}
+
+/* Summary */
+.cab-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.cab-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.cab-icon {
+  flex-shrink: 0;
+}
+.cab-wrapper--critical .cab-icon { color: #dc2626; }
+.cab-wrapper--high .cab-icon { color: #d97706; }
+.cab-summary-title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.cab-summary-count {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+.cab-chevron {
+  color: #94a3b8;
+  transition: transform 0.2s;
+}
+.cab-chevron--open {
+  transform: rotate(90deg);
+}
+
+/* Alerts List */
+.cab-alerts-list {
+  padding: 0 0.85rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.cab-alert-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e2e8f0;
+}
+.cab-alert--critical { border-left: 3px solid #dc2626; }
+.cab-alert--high     { border-left: 3px solid #d97706; }
+.cab-alert--moderate { border-left: 3px solid #6366f1; }
+
+.cab-alert-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+.cab-alert-client {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #334155;
+}
+.cab-alert-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cab-risk-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cab-risk-tag--critical { background: #fef2f2; color: #dc2626; }
+.cab-risk-tag--high     { background: #fffbeb; color: #d97706; }
+.cab-risk-tag--moderate { background: #eef2ff; color: #6366f1; }
+.cab-alert-time {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.cab-alert-text {
+  font-size: 0.8rem;
+  color: #475569;
+  font-style: italic;
+  margin: 0 0 0.4rem;
+  line-height: 1.45;
+  padding: 0.4rem 0.6rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 2px solid #cbd5e1;
+}
+
+/* Flags */
+.cab-alert-flags {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.cab-flag {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.cab-flag--critical { background: #fee2e2; color: #dc2626; }
+.cab-flag--high     { background: #fef3c7; color: #d97706; }
+.cab-flag--moderate { background: #e0e7ff; color: #6366f1; }
+
+/* Review */
+.cab-review-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #3b82f6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.cab-review-trigger:hover { text-decoration: underline; }
+.cab-review-form {
+  margin-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+}
+.cab-review-input {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.cab-review-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+.cab-review-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+.cab-review-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cab-review-btn:hover { opacity: 0.9; }
+.cab-review-cancel {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

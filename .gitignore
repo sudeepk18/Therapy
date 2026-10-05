@@ -28,6 +28,20 @@ build/
 *.swp
 *.swo
 
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# ── Backup ────────────────────────────────────
+*.git_bak
+.git_bak/
+
 # ── OS ────────────────────────────────────────
 .DS_Store
 Thumbs.db

@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Users, Calendar, CreditCard, UserPlus, TrendingUp, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Users, Calendar, CreditCard, UserPlus, TrendingUp, Clock,
+  Plus, CalendarPlus, Sparkles,
+} from 'lucide-react';
 import { clientsApi }  from '../../api/clients.api';
 import { sessionsApi } from '../../api/sessions.api';
 import { leadsApi }    from '../../api/leads.api';
@@ -11,9 +15,11 @@ import RevenueChart    from '../../components/charts/RevenueChart';
 import AIInsightsSection from '../../components/ai/AIInsightsSection';
 import { useAuth }     from '../../contexts/AuthContext';
 import './DashboardPage.css';
+import CrisisAlertBanner from '../../components/crisis/CrisisAlertBanner';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats,    setStats]    = useState(null);
   const [revenue,  setRevenue]  = useState(null);
   const [sessions, setSessions] = useState([]);
@@ -104,32 +110,65 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="dashboard">
-      {/* Greeting */}
-      <div className="dashboard-greeting">
-        <h2 className="greeting-text">
-          {greeting}, <span className="greeting-name">{user?.name?.split(' ')[0]}</span> 👋
-        </h2>
-        <p className="greeting-sub">
-          {today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+    <div className="dashboard animate-fade-in">
+      {/* Hero Greeting Section */}
+      <div className="dashboard-hero">
+        <div className="dashboard-greeting">
+          <h2 className="greeting-text">
+            {greeting}, <span className="greeting-name">{user?.name?.split(' ')[0]}</span> 👋
+          </h2>
+          <div className="greeting-sub-row">
+            <span className="greeting-date-badge">
+              <Calendar size={13} className="greeting-cal-icon" />
+              {today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+            <span className="greeting-dot">•</span>
+            <span className="greeting-summary">Here is what's happening with your practice today</span>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="dashboard-actions">
+          <button
+            className="btn btn-secondary dashboard-action-btn"
+            onClick={() => navigate('/therapist/clients')}
+          >
+            <UserPlus size={15} />
+            <span>Add Client</span>
+          </button>
+          <button
+            className="btn btn-primary dashboard-action-btn"
+            onClick={() => navigate('/therapist/schedule')}
+          >
+            <CalendarPlus size={15} />
+            <span>New Session</span>
+          </button>
+        </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* Crisis Safety Alerts (SOS Early Warning) */}
+      <CrisisAlertBanner />
+
+      {/* Stat Cards Grid */}
       <div className="dashboard-stats">
         {statCards.map((card) => (
           <StatCard key={card.id} {...card} loading={loading} />
         ))}
       </div>
 
-      {/* Main Grid */}
+      {/* Main Grid: Revenue & Sessions */}
       <div className="dashboard-grid">
         {/* Left: Revenue chart */}
-        <div className="dashboard-card">
+        <div className="dashboard-card glass-card">
           <div className="card-header">
             <div className="card-title-wrap">
-              <TrendingUp size={16} className="card-title-icon" />
-              <h3 className="card-title">Revenue Overview</h3>
+              <div className="card-icon-halo card-icon-halo--teal">
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <h3 className="card-title">Revenue Overview</h3>
+                <p className="card-subtitle">Monthly earnings & session breakdown</p>
+              </div>
             </div>
             <span className="card-badge">Year to date</span>
           </div>
@@ -137,27 +176,49 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Upcoming sessions */}
-        <div className="dashboard-card">
+        <div className="dashboard-card glass-card">
           <div className="card-header">
             <div className="card-title-wrap">
-              <Clock size={16} className="card-title-icon" />
-              <h3 className="card-title">Upcoming Sessions</h3>
+              <div className="card-icon-halo card-icon-halo--violet">
+                <Clock size={16} />
+              </div>
+              <div>
+                <h3 className="card-title">Upcoming Sessions</h3>
+                <p className="card-subtitle">Next appointments in queue</p>
+              </div>
             </div>
+            <button
+              className="card-header-link"
+              onClick={() => navigate('/therapist/schedule')}
+            >
+              View all
+            </button>
           </div>
           <UpcomingSessions sessions={sessions} loading={loading} />
         </div>
       </div>
 
-      {/* AI Insights Intelligence Layer */}
+      {/* AI Insights Intelligence Section */}
       <AIInsightsSection />
 
       {/* Recent clients */}
-      <div className="dashboard-card">
+      <div className="dashboard-card glass-card">
         <div className="card-header">
           <div className="card-title-wrap">
-            <Users size={16} className="card-title-icon" />
-            <h3 className="card-title">Recent Clients</h3>
+            <div className="card-icon-halo card-icon-halo--teal">
+              <Users size={16} />
+            </div>
+            <div>
+              <h3 className="card-title">Recent Clients</h3>
+              <p className="card-subtitle">Quick access to client records & status</p>
+            </div>
           </div>
+          <button
+            className="card-header-link"
+            onClick={() => navigate('/therapist/clients')}
+          >
+            Manage clients
+          </button>
         </div>
         <RecentClients clients={clients} loading={loading} />
       </div>

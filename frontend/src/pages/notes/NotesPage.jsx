@@ -165,11 +165,11 @@ export default function NotesPage() {
         )}
         <button
           id="new-note-btn"
-          className="btn-primary"
+          className="btn btn-primary"
           onClick={() => setShowModal(true)}
           disabled={!selectedClient}
         >
-          <Plus size={15} /> New Session Note
+          <Plus size={16} strokeWidth={2.4} /> New Session Note
         </button>
       </div>
 
@@ -298,15 +298,13 @@ export default function NotesPage() {
                       </button>
                     )}
 
-                    {note.status !== 'draft' && (
-                      <button
-                        className={`note-action-btn ${note.isSharedWithClient ? 'note-action-btn--shared' : ''}`}
-                        onClick={() => handleToggleShare(note._id, note.isSharedWithClient)}
-                        title="Toggle sharing with client portal"
-                      >
-                        <Share2 size={13} /> {note.isSharedWithClient ? 'Shared' : 'Share Portal'}
-                      </button>
-                    )}
+                    <button
+                      className={`note-action-btn ${note.isSharedWithClient ? 'note-action-btn--shared' : ''}`}
+                      onClick={() => handleToggleShare(note._id, note.isSharedWithClient)}
+                      title={note.isSharedWithClient ? 'Currently shared with client portal. Click to unshare' : 'Click to share with client in their portal'}
+                    >
+                      <Share2 size={13} /> {note.isSharedWithClient ? 'Shared with Client' : 'Share to Portal'}
+                    </button>
 
                     {!note.aiSentiment && (
                       <button
@@ -360,6 +358,7 @@ function CreateNoteModal({ clientId, onClose, onSuccess }) {
     soap: { subjective: '', objective: '', assessment: '', plan: '' },
     dap: { data: '', assessment: '', plan: '' },
     content: '',
+    isSharedWithClient: false,
   });
   const [busy, setBusy] = useState(false);
 
@@ -398,7 +397,7 @@ function CreateNoteModal({ clientId, onClose, onSuccess }) {
         ...form,
         clientId,
       });
-      toast.success('Clinical session note saved as draft!');
+      toast.success(form.isSharedWithClient ? 'Note saved & shared to Client Portal!' : 'Clinical session note saved as draft!');
       onSuccess();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save note');
@@ -581,12 +580,35 @@ function CreateNoteModal({ clientId, onClose, onSuccess }) {
             </label>
           )}
 
+          {/* Sharing with Client Portal Toggle */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '12px 14px',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            margin: '8px 0',
+          }}>
+            <input
+              type="checkbox"
+              id="share-client-portal-toggle"
+              checked={form.isSharedWithClient}
+              onChange={(e) => setForm(f => ({ ...f, isSharedWithClient: e.target.checked }))}
+              style={{ width: 17, height: 17, cursor: 'pointer', accentColor: 'var(--teal)' }}
+            />
+            <label htmlFor="share-client-portal-toggle" style={{ margin: 0, fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', cursor: 'pointer', textTransform: 'none', letterSpacing: 'normal' }}>
+              Share this session note &amp; homework with client in their portal immediately
+            </label>
+          </div>
+
           <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={busy}>
-              {busy ? 'Saving Draft…' : 'Save as Draft'}
+              {busy ? 'Saving…' : form.isSharedWithClient ? 'Save & Share with Client' : 'Save as Draft'}
             </button>
           </div>
         </form>

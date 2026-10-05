@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Lock, Eye, EyeOff, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Lock, Eye, EyeOff, Loader, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
 import { authApi } from '../../api/auth.api';
 import { clientPortalApi } from '../../api/client.portal.api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -19,6 +19,7 @@ export default function SetPasswordPage() {
   const [show, setShow]           = useState(false);
   const [busy, setBusy]           = useState(false);
   const [done, setDone]           = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!slug) return;
@@ -48,6 +49,7 @@ export default function SetPasswordPage() {
     }
 
     setBusy(true);
+    setErrorMessage('');
     try {
       const res = await authApi.setClientPassword({ token, newPassword: form.newPassword });
       const { user, token: jwtToken, role } = res.data.data;
@@ -63,13 +65,15 @@ export default function SetPasswordPage() {
 
       setTimeout(() => navigate(`/client/${slug}/portal`), 1500);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Something went wrong. Please try again.');
+      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
   };
 
-  const brandColor    = therapist?.brandColor || '#6C63FF';
+  const brandColor    = therapist?.brandColor || '#06B6D4';
   const practiceName  = therapist?.practiceName || therapist?.name || 'Your Therapist';
 
   if (!token) {
@@ -77,11 +81,29 @@ export default function SetPasswordPage() {
       <div className="cl-page">
         <div className="cl-accent-bar" style={{ background: brandColor }} />
         <div className="cl-card" style={{ textAlign: 'center' }}>
-          <AlertCircle size={40} color="#ef4444" style={{ margin: '0 auto 16px' }} />
-          <h2 style={{ color: '#f1f1f3', marginBottom: 8 }}>Invalid Link</h2>
-          <p style={{ color: '#9ca3af', fontSize: 14 }}>
-            This invite link is missing a token. Please ask your therapist to send a new invite.
+          <AlertCircle size={44} color="#F59E0B" style={{ margin: '0 auto 16px' }} />
+          <h2 style={{ color: '#F8FAFC', marginBottom: 8, fontFamily: 'var(--font-heading)' }}>
+            Invite Link Missing or Already Used
+          </h2>
+          <p style={{ color: '#94A3B8', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+            If you have already set up your password, you can sign in directly to your client portal without a new invite link.
           </p>
+          <Link
+            to={`/client/${slug}/login`}
+            className="cl-btn"
+            style={{
+              background: `linear-gradient(135deg, ${brandColor}, #0891B2)`,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              textDecoration: 'none',
+              color: '#fff',
+              fontWeight: 600,
+            }}
+          >
+            <LogIn size={16} /> Sign In to Client Portal
+          </Link>
         </div>
       </div>
     );
@@ -115,6 +137,36 @@ export default function SetPasswordPage() {
             <p className="cl-subheading">
               Set a password to activate your portal account.
             </p>
+
+            {errorMessage && errorMessage.toLowerCase().includes('expired') && (
+              <div style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                marginBottom: 16,
+                fontSize: 13,
+                color: '#F59E0B',
+              }}>
+                <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Already set your password before?</p>
+                <p style={{ margin: '0 0 10px 0', fontSize: 12, color: 'var(--text-secondary)' }}>
+                  If you previously created a password, you can sign in directly:
+                </p>
+                <Link
+                  to={`/client/${slug}/login`}
+                  style={{
+                    color: brandColor,
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <LogIn size={13} /> Go to Client Sign In →
+                </Link>
+              </div>
+            )}
 
             <form className="cl-form" onSubmit={handleSubmit} noValidate>
               <div className="auth-field">
@@ -164,6 +216,13 @@ export default function SetPasswordPage() {
                 {busy ? <Loader size={16} className="spin-icon" /> : 'Activate My Account'}
               </button>
             </form>
+
+            <p className="cl-footer-note" style={{ marginTop: 20 }}>
+              Already created your password previously?{' '}
+              <Link to={`/client/${slug}/login`} style={{ color: brandColor, fontWeight: 600 }}>
+                Sign In directly →
+              </Link>
+            </p>
           </>
         )}
       </div>

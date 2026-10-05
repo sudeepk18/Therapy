@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import {
   X, Calendar, Clock, Video, MapPin, Check, AlertCircle,
-  Sparkles, CheckCircle2, User, Phone, Mail, FileText, Loader2
+  Sparkles, CheckCircle2, User, Phone, Mail, FileText, Loader2,
+  Bell, CheckCheck, Trash2, ArrowUpRight, ExternalLink
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { leadsApi } from '../../api/leads.api';
 import './BookingRequestsDrawer.css';
@@ -14,9 +16,15 @@ export default function BookingRequestsDrawer({
   requests = [],
   loading = false,
   onHandled,
+  reminders = [],
+  unreadRemindersCount = 0,
+  onMarkReminderRead,
+  onMarkAllRemindersRead,
+  onDeleteReminder,
 }) {
   const [processingId, setProcessingId] = useState(null);
-  const [decliningId, setDecliningId] = useState(null);
+  const [decliningId,  setDecliningId]  = useState(null);
+  const [activeTab,    setActiveTab]    = useState(unreadRemindersCount > 0 ? 'reminders' : 'requests');
 
   if (!isOpen) return null;
 
@@ -54,20 +62,15 @@ export default function BookingRequestsDrawer({
   return (
     <>
       <div className="drawer-overlay" onClick={onClose} />
-      <aside className="booking-requests-drawer" aria-label="Booking Requests Panel">
+      <aside className="booking-requests-drawer" aria-label="Notifications and Requests Panel">
         {/* Drawer Header */}
         <div className="drawer-header">
           <div className="drawer-title-area">
             <div className="drawer-title-row">
-              <h2 className="drawer-title">Booking Requests</h2>
-              {pendingCount > 0 && (
-                <span className="drawer-badge-count">
-                  {pendingCount} {pendingCount === 1 ? 'Pending' : 'Pending'}
-                </span>
-              )}
+              <h2 className="drawer-title">Notifications &amp; Activity</h2>
             </div>
             <p className="drawer-subtitle">
-              Client requests awaiting your confirmation
+              Session countdown reminders and client enquiries
             </p>
           </div>
           <button
@@ -75,152 +78,284 @@ export default function BookingRequestsDrawer({
             onClick={onClose}
             aria-label="Close panel"
           >
-            <X size={20} />
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="drawer-tabs">
+          <button
+            type="button"
+            className={`drawer-tab ${activeTab === 'reminders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reminders')}
+          >
+            <Bell size={14} />
+            <span>Session Reminders</span>
+            {unreadRemindersCount > 0 && (
+              <span className="drawer-tab-badge drawer-tab-badge--teal">
+                {unreadRemindersCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className={`drawer-tab ${activeTab === 'requests' ? 'active' : ''}`}
+            onClick={() => setActiveTab('requests')}
+          >
+            <Calendar size={14} />
+            <span>Booking Requests</span>
+            {pendingCount > 0 && (
+              <span className="drawer-tab-badge drawer-tab-badge--amber">
+                {pendingCount}
+              </span>
+            )}
           </button>
         </div>
 
         {/* Drawer Content */}
         <div className="drawer-content">
-          {loading ? (
-            <div className="drawer-loading">
-              <Loader2 className="spinner-icon" size={32} />
-              <p>Loading requests...</p>
-            </div>
-          ) : requests.length === 0 ? (
-            <div className="drawer-empty-state">
-              <div className="empty-icon-circle">
-                <CheckCircle2 size={36} className="empty-icon" />
-              </div>
-              <h3 className="empty-title">All caught up!</h3>
-              <p className="empty-description">
-                You have no pending appointment requests at this moment. New requests from your public booking portal will appear right here.
-              </p>
+          {activeTab === 'reminders' ? (
+            /* ────────────────────────────────────────────────────────── */
+            /* Tab: Session Reminders                                     */
+            /* ────────────────────────────────────────────────────────── */
+            <div>
+              {reminders.length > 0 && (
+                <div className="drawer-section-toolbar">
+                  <span className="drawer-section-title">
+                    {unreadRemindersCount > 0
+                      ? `${unreadRemindersCount} unread reminder${unreadRemindersCount > 1 ? 's' : ''}`
+                      : 'All caught up'}
+                  </span>
+                  {unreadRemindersCount > 0 && (
+                    <button
+                      type="button"
+                      className="drawer-action-link"
+                      onClick={onMarkAllRemindersRead}
+                    >
+                      <CheckCheck size={13} style={{ display: 'inline', marginRight: 4 }} />
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {reminders.length === 0 ? (
+                <div className="drawer-empty-state">
+                  <div className="empty-icon-circle">
+                    <CheckCircle2 size={30} className="empty-icon" />
+                  </div>
+                  <h3 className="empty-title">No Active Reminders</h3>
+                  <p className="empty-description">
+                    You're all set! You'll receive automated alerts here on the day of your sessions, 1 hour before, and 5 minutes before they begin.
+                  </p>
+                </div>
+              ) : (
+                <div className="reminders-list">
+                  {reminders.map((item) => {
+                    const isUrgent = item.subType === 'five_minutes';
+                    const isOneHour = item.subType === 'one_hour';
+                    const isDayOf = item.subType === 'day_of';
+
+                    let pillClass = 'milestone-day-of';
+                    let pillLabel = 'Today';
+                    if (isUrgent) {
+                      pillClass = 'milestone-five-minutes';
+                      pillLabel = 'Starts in 5 min!';
+                    } else if (isOneHour) {
+                      pillClass = 'milestone-one-hour';
+                      pillLabel = 'In 1 Hour';
+                    }
+
+                    return (
+                      <div
+                        key={item._id}
+                        className={`reminder-card ${!item.isRead ? 'unread' : ''}`}
+                      >
+                        <div className="reminder-card-top">
+                          <span className={`reminder-milestone-pill ${pillClass}`}>
+                            <Clock size={11} /> {pillLabel}
+                          </span>
+                          <span className="reminder-time-ago">
+                            {item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : ''}
+                          </span>
+                        </div>
+
+                        <h4 className="reminder-title">{item.title}</h4>
+                        <p className="reminder-message">{item.message}</p>
+
+                        <div className="reminder-actions">
+                          {/* Join Video or View Session */}
+                          {item.sessionId?.meetingLink ? (
+                            <a
+                              href={item.sessionId.meetingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="reminder-btn-join"
+                              onClick={() => onMarkReminderRead && onMarkReminderRead(item._id)}
+                            >
+                              <Video size={13} /> Join Room
+                            </a>
+                          ) : item.sessionId?._id ? (
+                            <Link
+                              to="/therapist/schedule"
+                              className="reminder-btn-join"
+                              onClick={() => {
+                                if (onMarkReminderRead) onMarkReminderRead(item._id);
+                                onClose();
+                              }}
+                            >
+                              <Video size={13} /> Open Session
+                            </Link>
+                          ) : null}
+
+                          {/* Client Notes link */}
+                          {item.clientId && (
+                            <Link
+                              to={`/therapist/clients/${item.clientId._id || item.clientId}`}
+                              className="reminder-btn-action"
+                              onClick={() => {
+                                if (onMarkReminderRead) onMarkReminderRead(item._id);
+                                onClose();
+                              }}
+                            >
+                              <FileText size={12} /> Notes
+                            </Link>
+                          )}
+
+                          {/* Mark Read Toggle */}
+                          {!item.isRead && (
+                            <button
+                              type="button"
+                              className="reminder-btn-action"
+                              onClick={() => onMarkReminderRead && onMarkReminderRead(item._id)}
+                              title="Mark as read"
+                            >
+                              <Check size={12} /> Read
+                            </button>
+                          )}
+
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            className="reminder-btn-dismiss"
+                            onClick={() => onDeleteReminder && onDeleteReminder(item._id)}
+                            title="Dismiss reminder"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="drawer-requests-list">
-              {requests.map((lead) => {
-                const b = lead.bookingDetails || {};
-                const isAccepting = processingId === lead._id;
-                const isDeclining = decliningId === lead._id;
-                const isBusy = isAccepting || isDeclining;
-
-                let dateDisplay = 'Date not specified';
-                let timeDisplay = '';
-                if (b.scheduledAt) {
-                  try {
-                    const dateObj = new Date(b.scheduledAt);
-                    dateDisplay = format(dateObj, 'EEEE, dd MMM yyyy');
-                    timeDisplay = `${format(dateObj, 'hh:mm a')} (${b.durationMinutes || 50} min)`;
-                  } catch (e) {
-                    dateDisplay = String(b.scheduledAt);
-                  }
-                }
-
-                return (
-                  <div key={lead._id} className="booking-request-card">
-                    {/* Top Row: Name & tag */}
-                    <div className="request-card-header">
-                      <div className="client-identity">
-                        <div className="client-avatar">
-                          {lead.name ? lead.name[0].toUpperCase() : 'C'}
-                        </div>
-                        <div>
-                          <h4 className="client-name">{lead.name}</h4>
-                          <span className="request-pill-status">Awaiting Approval</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Time & Date Highlight */}
-                    <div className="request-timing-box">
-                      <div className="timing-row">
-                        <Calendar size={15} className="timing-icon" />
-                        <span className="timing-date">{dateDisplay}</span>
-                      </div>
-                      {timeDisplay && (
-                        <div className="timing-row">
-                          <Clock size={15} className="timing-icon" />
-                          <span className="timing-time">{timeDisplay}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Modality Chips */}
-                    <div className="request-meta-chips">
-                      <span className="request-meta-chip">
-                        {b.medium === 'in-person' ? <MapPin size={13} /> : <Video size={13} />}
-                        <span className="capitalize">{b.medium || 'video'}</span>
-                      </span>
-                      <span className="request-meta-chip">
-                        <span className="capitalize">{b.sessionType || 'individual'} Session</span>
-                      </span>
-                    </div>
-
-                    {/* Contact details */}
-                    <div className="request-contact-list">
-                      <a href={`mailto:${lead.email}`} className="contact-item">
-                        <Mail size={13} />
-                        <span>{lead.email}</span>
-                      </a>
-                      {lead.phone && (
-                        <a href={`tel:${lead.phone}`} className="contact-item">
-                          <Phone size={13} />
-                          <span>{lead.phone}</span>
-                        </a>
-                      )}
-                    </div>
-
-                    {/* Notes if any */}
-                    {b.notes && (
-                      <div className="request-notes-box">
-                        <FileText size={13} className="notes-icon" />
-                        <p className="request-notes-text">"{b.notes}"</p>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="request-actions">
-                      <button
-                        className="btn-request-accept"
-                        onClick={() => handleAccept(lead)}
-                        disabled={isBusy}
-                      >
-                        {isAccepting ? (
-                          <>
-                            <Loader2 size={16} className="btn-spinner" />
-                            <span>Confirming...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Check size={16} />
-                            <span>Accept &amp; Schedule</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        className="btn-request-decline"
-                        onClick={() => handleDecline(lead)}
-                        disabled={isBusy}
-                      >
-                        {isDeclining ? (
-                          <Loader2 size={14} className="btn-spinner" />
-                        ) : (
-                          <span>Decline</span>
-                        )}
-                      </button>
-                    </div>
+            /* ────────────────────────────────────────────────────────── */
+            /* Tab: Booking Requests                                      */
+            /* ────────────────────────────────────────────────────────── */
+            <div>
+              {loading ? (
+                <div className="drawer-loading">
+                  <Loader2 size={28} className="spinner-icon" />
+                  <p>Checking incoming booking requests...</p>
+                </div>
+              ) : pendingCount === 0 ? (
+                <div className="drawer-empty-state">
+                  <div className="empty-icon-circle">
+                    <CheckCircle2 size={32} className="empty-icon" />
                   </div>
-                );
-              })}
+                  <h3 className="empty-title">All Caught Up</h3>
+                  <p className="empty-description">
+                    There are no pending booking requests right now. New consultation requests from your booking page will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="drawer-requests-list">
+                  {requests.map((lead) => {
+                    const booking = lead.bookingDetails || {};
+                    const isProcessing = processingId === lead._id;
+                    const isDeclining = decliningId === lead._id;
+
+                    const dateStr = booking.scheduledAt
+                      ? format(new Date(booking.scheduledAt), 'EEEE, MMMM d, yyyy')
+                      : 'Date not specified';
+                    const timeStr = booking.timeSlot || 'Time not specified';
+
+                    return (
+                      <div key={lead._id} className="booking-request-card">
+                        <div className="request-card-header">
+                          <div className="client-identity">
+                            <div className="client-avatar">
+                              {lead.name ? lead.name.slice(0, 2).toUpperCase() : 'CL'}
+                            </div>
+                            <div>
+                              <p className="client-name">{lead.name}</p>
+                              <span className="request-pill-status">Pending Confirmation</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="request-timing-box">
+                          <div className="timing-row">
+                            <Calendar size={14} className="timing-icon" />
+                            <span className="timing-date">{dateStr}</span>
+                          </div>
+                          <div className="timing-row">
+                            <Clock size={14} className="timing-icon" />
+                            <span className="timing-time">{timeStr}</span>
+                          </div>
+                        </div>
+
+                        <div className="request-meta-chips">
+                          <span className="request-meta-chip">
+                            <Video size={11} />
+                            <span className="capitalize">{booking.medium || 'video'} Session</span>
+                          </span>
+                          <span className="request-meta-chip">
+                            <Clock size={11} />
+                            <span>{booking.durationMinutes || 50} mins</span>
+                          </span>
+                        </div>
+
+                        <div className="request-actions">
+                          <button
+                            type="button"
+                            className="btn-request-accept"
+                            onClick={() => handleAccept(lead)}
+                            disabled={isProcessing || isDeclining}
+                          >
+                            {isProcessing ? (
+                              <Loader2 size={13} className="btn-spinner" />
+                            ) : (
+                              <Check size={13} />
+                            )}
+                            {isProcessing ? 'Confirming…' : 'Accept & Add to Calendar'}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn-request-decline"
+                            onClick={() => handleDecline(lead)}
+                            disabled={isProcessing || isDeclining}
+                          >
+                            {isDeclining ? <Loader2 size={13} className="btn-spinner" /> : 'Decline'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Drawer Footer Notice */}
+        {/* Footer */}
         <div className="drawer-footer">
           <p className="drawer-footer-note">
-            💡 Approving automatically adds the appointment to your schedule and closes the chosen time slot to prevent double-bookings.
+            💡 Reminders automatically trigger on the day of the session, 1 hour before, and 5 minutes before scheduled start time.
           </p>
         </div>
       </aside>

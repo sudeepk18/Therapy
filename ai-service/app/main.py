@@ -27,7 +27,7 @@ except ImportError:
                     os.environ.setdefault(k.strip(), v.strip())
 
 from app.services.model_loader import ModelLoader
-from app.routes import no_show, sentiment, soap, scheduling, forecasting
+from app.routes import no_show, sentiment, soap, scheduling, forecasting, cbt, crisis, trajectory
 
 logging.basicConfig(
     level=logging.INFO,
@@ -114,3 +114,6 @@ app.include_router(sentiment.router,  prefix="/predict",   tags=["Sentiment Anal
 app.include_router(soap.router,       prefix="/generate",  tags=["SOAP Draft"])
 app.include_router(scheduling.router, prefix="/recommend", tags=["Smart Scheduling"])
 app.include_router(forecasting.router,prefix="/forecast",  tags=["Revenue Forecasting"])
+app.include_router(cbt.router,        prefix="/analyze",   tags=["CBT Distortion Analysis"])
+app.include_router(crisis.router,     prefix="/safety",    tags=["Crisis Detection"])
+app.include_router(trajectory.router, prefix="/analytics", tags=["Recovery Trajectory"])

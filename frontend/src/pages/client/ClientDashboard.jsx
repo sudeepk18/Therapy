@@ -4,13 +4,14 @@ import {
   Calendar, Clock, Video, User, Phone, LogOut,
   ChevronRight, BookOpen, Shield, Loader,
   MapPin, CheckCircle2, XCircle, AlertCircle,
-  FileText, X, Check,
+  FileText, X, Check, ExternalLink,
 } from 'lucide-react';
 import { clientPortalApi } from '../../api/client.portal.api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Spinner } from '../../components/common/Common';
 import toast from 'react-hot-toast';
 import './ClientDashboard.css';
+import CBTThoughtJournal from '../../components/cbt/CBTThoughtJournal';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -128,6 +129,54 @@ export default function ClientDashboard() {
       {/* ── Main ───────────────────────────────────────────────────────── */}
       <main className="cd-main">
 
+        {/* ── Active Video Call Banner ──────── */}
+        {(() => {
+          const activeSession = sessions.upcoming.find((s) => {
+            const isOnline = s.medium === 'video' || s.medium === 'online';
+            const link = s.meetingLink || s.videoCall?.joinUrl;
+            return isOnline && link;
+          }) || sessions.upcoming.find((s) => {
+            const isOnline = s.medium === 'video' || s.medium === 'online';
+            const mins = (new Date(s.scheduledAt).getTime() - Date.now()) / (1000 * 60);
+            return isOnline && mins <= 60 && mins >= -120;
+          });
+
+          if (!activeSession) return null;
+          const link = activeSession.meetingLink || activeSession.videoCall?.joinUrl;
+          return (
+            <div className="cd-live-banner">
+              <div className="cd-live-banner-left">
+                <span className="cd-live-pulse-dot" />
+                <div>
+                  <p className="cd-live-title">
+                    {link ? 'Online Video Session Link Ready' : 'Online Therapy Session Scheduled'}
+                  </p>
+                  <p className="cd-live-subtitle">
+                    {formatDate(activeSession.scheduledAt)} · {formatTime(activeSession.scheduledAt)} with {therapist?.displayName || therapist?.name || 'your therapist'}
+                  </p>
+                </div>
+              </div>
+              {link ? (
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="cd-live-join-btn"
+                  id="join-video-call-banner-btn"
+                >
+                  <Video size={16} />
+                  <span>Join Video Call Now</span>
+                  <ExternalLink size={14} />
+                </a>
+              ) : (
+                <span className="cd-live-waiting-badge">
+                  Therapist will send video link before session
+                </span>
+              )}
+            </div>
+          );
+        })()}
+
         {/* ── Stats row ──────────────────────────────────────────────── */}
         <div className="cd-stats-row">
           <div className="cd-stat-card">
@@ -159,6 +208,11 @@ export default function ClientDashboard() {
           </div>
         </div>
 
+        {/* ── CBT Thought Journal (Between-Session Homework) ────────── */}
+        <section className="cd-section">
+          <CBTThoughtJournal />
+        </section>
+
         {/* ── Upcoming sessions ──────────────────────────────────────── */}
         <section className="cd-section">
           <div className="cd-section-header">
@@ -181,23 +235,57 @@ export default function ClientDashboard() {
             </div>
           ) : (
             <div className="cd-sessions-list">
-              {sessions.upcoming.map(s => (
-                <div key={s._id} className="cd-session-card cd-session-card--upcoming">
-                  <div className="cd-session-medium" style={{ background: `${brandColor}18`, color: brandColor }}>
-                    {mediumIcon(s.medium)}
+              {sessions.upcoming.map(s => {
+                const isOnline = s.medium === 'video' || s.medium === 'online';
+                const videoLink = s.meetingLink || s.videoCall?.joinUrl;
+                const diffMinutes = (new Date(s.scheduledAt).getTime() - Date.now()) / (1000 * 60);
+                const isStartingSoon = diffMinutes <= 60 && diffMinutes >= -60;
+
+                return (
+                  <div key={s._id} className="cd-session-card cd-session-card--upcoming">
+                    <div className="cd-session-medium" style={{ background: `${brandColor}18`, color: brandColor }}>
+                      {mediumIcon(s.medium)}
+                    </div>
+                    <div className="cd-session-info">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <p className="cd-session-date">{formatDate(s.scheduledAt)}</p>
+                        {isOnline && isStartingSoon && (
+                          <span className="cd-live-indicator-badge">
+                            <span className="cd-pulse-dot" /> Starts in &lt;1h
+                          </span>
+                        )}
+                      </div>
+                      <p className="cd-session-time">{formatTime(s.scheduledAt)}</p>
+                      {s.durationMinutes && (
+                        <p className="cd-session-meta">{s.durationMinutes} min · {isOnline ? 'Online Video' : s.medium || 'video'}</p>
+                      )}
+                    </div>
+                    <div className="cd-session-right" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      {isOnline && (
+                        videoLink ? (
+                          <a
+                            href={videoLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="cd-join-call-btn"
+                            style={{ background: brandColor }}
+                            id={`cd-join-session-${s._id}`}
+                          >
+                            <Video size={14} />
+                            <span>Join Video Call</span>
+                            <ExternalLink size={12} />
+                          </a>
+                        ) : (
+                          <span className="cd-link-pending-badge" title="Your therapist will send the video room link prior to the appointment">
+                            Video Link Pending
+                          </span>
+                        )
+                      )}
+                      {statusBadge('scheduled')}
+                    </div>
                   </div>
-                  <div className="cd-session-info">
-                    <p className="cd-session-date">{formatDate(s.scheduledAt)}</p>
-                    <p className="cd-session-time">{formatTime(s.scheduledAt)}</p>
-                    {s.durationMinutes && (
-                      <p className="cd-session-meta">{s.durationMinutes} min · {s.medium || 'video'}</p>
-                    )}
-                  </div>
-                  <div className="cd-session-right">
-                    {statusBadge('scheduled')}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -262,23 +350,40 @@ export default function ClientDashboard() {
               </h2>
             </div>
             <div className="cd-sessions-list">
-              {sessions.past.map(s => (
-                <div key={s._id} className="cd-session-card">
-                  <div className="cd-session-medium" style={{ background: '#1f2937', color: '#6b7280' }}>
-                    {mediumIcon(s.medium)}
+              {sessions.past.map(s => {
+                const videoLink = s.meetingLink || s.videoCall?.joinUrl;
+                return (
+                  <div key={s._id} className="cd-session-card">
+                    <div className="cd-session-medium" style={{ background: '#1f2937', color: '#6b7280' }}>
+                      {mediumIcon(s.medium)}
+                    </div>
+                    <div className="cd-session-info">
+                      <p className="cd-session-date">{formatDate(s.scheduledAt)}</p>
+                      <p className="cd-session-time">{formatTime(s.scheduledAt)}</p>
+                      {s.durationMinutes && (
+                        <p className="cd-session-meta">{s.durationMinutes} min · {s.medium || 'video'}</p>
+                      )}
+                    </div>
+                    <div className="cd-session-right" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      {videoLink && (
+                        <a
+                          href={videoLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="cd-join-call-btn"
+                          style={{ background: brandColor }}
+                          title="Open video meeting room"
+                        >
+                          <Video size={13} />
+                          <span>Video Room</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      )}
+                      {statusBadge(s.status)}
+                    </div>
                   </div>
-                  <div className="cd-session-info">
-                    <p className="cd-session-date">{formatDate(s.scheduledAt)}</p>
-                    <p className="cd-session-time">{formatTime(s.scheduledAt)}</p>
-                    {s.durationMinutes && (
-                      <p className="cd-session-meta">{s.durationMinutes} min · {s.medium || 'video'}</p>
-                    )}
-                  </div>
-                  <div className="cd-session-right">
-                    {statusBadge(s.status)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}

@@ -1,43 +1,108 @@
+/* ============================================================
+   UNFAZED — Glassmorphism Header Bar
+   ============================================================ */
+
 .app-header {
   height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 36px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
+  transition: var(--transition);
 }
 
 .header-left {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-title {
-  font-size: 18px;
+  font-family: var(--font-heading);
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.03em;
+}
+
+.header-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.live-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10B981;
+  animation: pulseGlow 2s infinite ease-in-out;
 }
 
 .header-sub {
   font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 1px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
-/* Notification bell */
+/* ── Client Portal Link Button ──────────────────────────────── */
+.header-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.header-portal-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--teal);
+  color: var(--teal);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+  transform: translateY(-1px);
+}
+
+.header-portal-icon {
+  color: var(--teal);
+}
+
+/* ── Notification Bell ──────────────────────────────────────── */
 .header-bell {
   position: relative;
   background: var(--bg-elevated);
@@ -50,20 +115,31 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  cursor: pointer;
 }
+
 .header-bell:hover {
   color: var(--text-primary);
-  border-color: var(--teal);
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+  transform: translateY(-1px);
 }
+
+.header-bell.has-notifications {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--warning);
+}
+
 .header-bell-dot {
   position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
+  top: 9px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
   background: var(--teal);
   border-radius: 50%;
-  border: 2px solid var(--bg-surface);
+  box-shadow: 0 0 6px var(--teal);
 }
 
 .header-bell-badge {
@@ -73,49 +149,83 @@
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
   color: white;
   font-size: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.5);
   border: 2px solid var(--bg-surface);
 }
 
-/* User */
+/* ── User Profile Badge ─────────────────────────────────────── */
 .header-user {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 12px 6px 6px;
+  padding: 5px 12px 5px 5px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.header-user:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+}
+
+.header-avatar-ring {
+  padding: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
 }
 
 .header-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--teal), var(--violet));
+  background: var(--bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 700;
-  color: white;
+  color: #FFFFFF;
+}
+
+.header-user-info {
+  line-height: 1.25;
 }
 
 .header-user-name {
-  font-size: 13px;
+  font-family: var(--font-heading);
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .header-user-role {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 16px;
+  }
+  .header-live-badge,
+  .header-sub {
+    display: none;
+  }
+  .header-user-info {
+    display: none;
+  }
+  .header-user {
+    padding: 5px;
+  }
 }

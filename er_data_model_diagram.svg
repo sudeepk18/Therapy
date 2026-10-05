@@ -1,0 +1,281 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1050" width="1600" height="1050" style="background:#0b1120; font-family:'Segoe UI', Inter, -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+
+    <!-- Table Header Gradients -->
+    <linearGradient id="hdrCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="hdrEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="hdrPurple" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="hdrAmber" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="hdrRose" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#be123c"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="tableShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrowLine" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M 0 0 L 6 3 L 0 6 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="1050" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Grid -->
+  <g opacity="0.04">
+    <path d="M 0,100 L 1600,100 M 0,200 L 1600,200 M 0,300 L 1600,300 M 0,400 L 1600,400 M 0,500 L 1600,500 M 0,600 L 1600,600 M 0,700 L 1600,700 M 0,800 L 1600,800 M 0,900 L 1600,900 M 0,1000 L 1600,1000" stroke="#38bdf8" stroke-width="1"/>
+    <path d="M 100,0 L 100,1050 M 200,0 L 200,1050 M 300,0 L 300,1050 M 400,0 L 400,1050 M 500,0 L 500,1050 M 600,0 L 600,1050 M 700,0 L 700,1050 M 800,0 L 800,1050 M 900,0 L 900,1050 M 1000,0 L 1000,1050 M 1100,0 L 1100,1050 M 1200,0 L 1200,1050 M 1300,0 L 1300,1050 M 1400,0 L 1400,1050 M 1500,0 L 1500,1050" stroke="#38bdf8" stroke-width="1"/>
+  </g>
+
+  <!-- ==================== HEADER ==================== -->
+  <g transform="translate(60, 30)">
+    <rect x="0" y="0" width="1480" height="56" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#tableShadow)"/>
+    <circle cx="28" cy="28" r="9" fill="#a855f7"/>
+    <text x="48" y="34" fill="#f8fafc" font-size="20" font-weight="700">UNFAZED — Entity-Relationship (ER) Data Model Diagram</text>
+    <rect x="1060" y="14" width="395" height="28" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+    <text x="1075" y="32" fill="#94a3b8" font-size="12" font-weight="500">Mongoose ODM / MongoDB Atlas Multi-Tenant Schema</text>
+  </g>
+
+  <!-- ==================== CONNECTING RELATIONSHIP LINES ==================== -->
+  <g stroke="#38bdf8" stroke-width="1.8" opacity="0.65" fill="none">
+    <!-- THERAPIST -> CLIENT (1:N) -->
+    <path d="M 180, 420 L 180, 500" stroke-dasharray="4,4"/>
+    <!-- THERAPIST -> SESSION (1:N) -->
+    <path d="M 330, 270 L 590, 270"/>
+    <!-- CLIENT -> SESSION (1:N) -->
+    <path d="M 330, 620 L 460, 620 L 460, 340 L 590, 340"/>
+    <!-- SESSION -> SESSION_NOTE (1:1 / 1:N) -->
+    <path d="M 920, 270 L 1050, 270"/>
+    <!-- CLIENT_PACKAGE -> SESSION (1:N) -->
+    <path d="M 755, 510 L 755, 430"/>
+    <!-- PACKAGE -> CLIENT_PACKAGE (1:N) -->
+    <path d="M 1050, 580 L 920, 580"/>
+    <!-- PAYMENT -> SESSION / CLIENT_PACKAGE (1:1 / 1:N) -->
+    <path d="M 640, 770 L 640, 660"/>
+    <!-- THERAPIST -> AVAILABILITY (1:1) -->
+    <path d="M 280, 110 L 280, 100 L 1050, 100 L 1050, 110"/>
+  </g>
+
+  <!-- Relationship Cardinality Labels -->
+  <g fill="#38bdf8" font-size="11" font-weight="700">
+    <rect x="190" y="450" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="196" y="463">1:N</text>
+
+    <rect x="440" y="255" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="446" y="268">1:N</text>
+
+    <rect x="445" y="470" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="451" y="483">1:N</text>
+
+    <rect x="965" y="255" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="971" y="268">1:1</text>
+
+    <rect x="965" y="565" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="971" y="578">1:N</text>
+
+    <rect x="739" y="460" width="32" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <text x="745" y="473">1:N</text>
+  </g>
+
+  <!-- ==================== ENTITY 1: THERAPIST ==================== -->
+  <g transform="translate(60, 110)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="270" height="310" rx="8" fill="#111827" stroke="#0284c7" stroke-width="1.5"/>
+    <rect x="0" y="0" width="270" height="34" rx="8" fill="url(#hdrCyan)"/>
+    <rect x="0" y="24" width="270" height="10" fill="#0284c7"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">THERAPIST (Core Tenant)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="34"><tspan fill="#94a3b8" font-weight="700">•</tspan> name : String</text>
+      <text y="54"><tspan fill="#fbbf24" font-weight="700">★</tspan> email : String [UK]</text>
+      <text y="74"><tspan fill="#94a3b8" font-weight="700">•</tspan> passwordHash : String</text>
+      <text y="94"><tspan fill="#fbbf24" font-weight="700">★</tspan> slug : String [UK]</text>
+      <text y="114"><tspan fill="#a78bfa" font-weight="700">🔗</tspan> subscriptionTier : String [FK]</text>
+      <text y="134"><tspan fill="#94a3b8" font-weight="700">•</tspan> role : Enum ("therapist"|"admin")</text>
+      <text y="154"><tspan fill="#94a3b8" font-weight="700">•</tspan> specializations : [String]</text>
+      <text y="174"><tspan fill="#94a3b8" font-weight="700">•</tspan> qualifications : [String]</text>
+      <text y="194"><tspan fill="#94a3b8" font-weight="700">•</tspan> licenseNumber : String</text>
+      <text y="214"><tspan fill="#94a3b8" font-weight="700">📦</tspan> payoutDetails : SubDoc (Bank/UPI)</text>
+      <text y="234"><tspan fill="#94a3b8" font-weight="700">📦</tspan> socialLinks : SubDoc</text>
+      <text y="254"><tspan fill="#34d399" font-weight="700">•</tspan> isProfileComplete : Boolean</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 2: CLIENT ==================== -->
+  <g transform="translate(60, 500)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="270" height="310" rx="8" fill="#111827" stroke="#0284c7" stroke-width="1.5"/>
+    <rect x="0" y="0" width="270" height="34" rx="8" fill="url(#hdrCyan)"/>
+    <rect x="0" y="24" width="270" height="10" fill="#0284c7"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">CLIENT (Patient Record)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="34"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]</text>
+      <text y="54"><tspan fill="#94a3b8" font-weight="700">•</tspan> name : String</text>
+      <text y="74"><tspan fill="#fbbf24" font-weight="700">★</tspan> email : String</text>
+      <text y="94"><tspan fill="#94a3b8" font-weight="700">•</tspan> phone : String</text>
+      <text y="114"><tspan fill="#94a3b8" font-weight="700">•</tspan> status : Enum (lead|active|disc)</text>
+      <text y="134"><tspan fill="#94a3b8" font-weight="700">📦</tspan> emergencyContact : SubDoc</text>
+      <text y="154"><tspan fill="#94a3b8" font-weight="700">📦</tspan> digitalConsent : SubDoc (IP/sig)</text>
+      <text y="174"><tspan fill="#94a3b8" font-weight="700">📦</tspan> intake : SubDoc (concerns, meds)</text>
+      <text y="194"><tspan fill="#34d399" font-weight="700">📊</tspan> totalSessionsCompleted : Number</text>
+      <text y="214"><tspan fill="#f43f5e" font-weight="700">⚠️</tspan> totalNoShows : Number</text>
+      <text y="234"><tspan fill="#94a3b8" font-weight="700">•</tspan> lastSessionDate : Date</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 3: SESSION ==================== -->
+  <g transform="translate(590, 110)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="330" height="320" rx="8" fill="#111827" stroke="#10b981" stroke-width="1.5"/>
+    <rect x="0" y="0" width="330" height="34" rx="8" fill="url(#hdrEmerald)"/>
+    <rect x="0" y="24" width="330" height="10" fill="#10b981"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">SESSION (Appointment &amp; Care)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="34"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]</text>
+      <text y="54"><tspan fill="#a78bfa" font-weight="700">🔗 clientId</tspan> : ObjectId [FK]</text>
+      <text y="74"><tspan fill="#a78bfa" font-weight="700">🔗 clientPackageId</tspan> : ObjectId [FK, Nullable]</text>
+      <text y="94"><tspan fill="#34d399" font-weight="700">📅</tspan> scheduledAt : Date</text>
+      <text y="114"><tspan fill="#94a3b8" font-weight="700">•</tspan> durationMinutes : Number (e.g. 50)</text>
+      <text y="134"><tspan fill="#94a3b8" font-weight="700">•</tspan> sessionType : Enum (individual|couple)</text>
+      <text y="154"><tspan fill="#94a3b8" font-weight="700">•</tspan> medium : Enum (video|in_person|phone)</text>
+      <text y="174"><tspan fill="#94a3b8" font-weight="700">•</tspan> status : Enum (sched|confirmed|completed|cancelled)</text>
+      <text y="194"><tspan fill="#94a3b8" font-weight="700">•</tspan> paymentStatus : Enum (pending|paid|package)</text>
+      <text y="214"><tspan fill="#60a5fa" font-weight="700">📹 videoCall</tspan> : SubDoc (roomName, joinUrl, hostUrl)</text>
+      <text y="234"><tspan fill="#f59e0b" font-weight="700">🧠 aiRisk</tspan> : SubDoc (noShowProb, riskLevel, lowConf)</text>
+      <text y="254"><tspan fill="#f43f5e" font-weight="700">❌ cancellation</tspan> : SubDoc (reason, feeWaived)</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 4: SESSION_NOTE ==================== -->
+  <g transform="translate(1050, 110)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="340" height="320" rx="8" fill="#111827" stroke="#8b5cf6" stroke-width="1.5"/>
+    <rect x="0" y="0" width="340" height="34" rx="8" fill="url(#hdrPurple)"/>
+    <rect x="0" y="24" width="340" height="10" fill="#8b5cf6"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">SESSION_NOTE (Clinical Documentation)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="34"><tspan fill="#a78bfa" font-weight="700">🔗 sessionId</tspan> : ObjectId [FK, UK]</text>
+      <text y="54"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]</text>
+      <text y="74"><tspan fill="#a78bfa" font-weight="700">🔗 clientId</tspan> : ObjectId [FK]</text>
+      <text y="94"><tspan fill="#94a3b8" font-weight="700">•</tspan> noteType : Enum ("soap" | "dap" | "freeform")</text>
+      <text y="114"><tspan fill="#c084fc" font-weight="700">📝 soap.subjective</tspan> : String (client reported)</text>
+      <text y="134"><tspan fill="#c084fc" font-weight="700">📝 soap.objective</tspan> : String (observations)</text>
+      <text y="154"><tspan fill="#c084fc" font-weight="700">📝 soap.assessment</tspan> : String (clinical evaluation)</text>
+      <text y="174"><tspan fill="#c084fc" font-weight="700">📝 soap.plan</tspan> : String (homework / goals)</text>
+      <text y="194"><tspan fill="#f59e0b" font-weight="700">🧠 aiSentiment</tspan> : SubDoc (score -1..1, label, ver)</text>
+      <text y="214"><tspan fill="#34d399" font-weight="700">🔒 isSigned</tspan> : Boolean (digital lock)</text>
+      <text y="234"><tspan fill="#94a3b8" font-weight="700">•</tspan> signedAt : Date</text>
+      <text y="254"><tspan fill="#94a3b8" font-weight="700">•</tspan> signatureHash : String (SHA-256 audit)</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 5: CLIENT_PACKAGE ==================== -->
+  <g transform="translate(590, 510)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="330" height="150" rx="8" fill="#111827" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="330" height="34" rx="8" fill="url(#hdrAmber)"/>
+    <rect x="0" y="24" width="330" height="10" fill="#f59e0b"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">CLIENT_PACKAGE (Purchased Credit)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="32"><tspan fill="#a78bfa" font-weight="700">🔗 clientId</tspan> : ObjectId [FK]  |  <tspan fill="#a78bfa" font-weight="700">🔗 packageId</tspan> : [FK]</text>
+      <text y="50"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]  |  <tspan fill="#a78bfa" font-weight="700">🔗 paymentId</tspan> : [FK]</text>
+      <text y="68"><tspan fill="#34d399" font-weight="700">•</tspan> sessionsTotal : Number  |  sessionsRemaining : Number</text>
+      <text y="86"><tspan fill="#94a3b8" font-weight="700">•</tspan> expiresAt : Date</text>
+      <text y="104"><tspan fill="#94a3b8" font-weight="700">•</tspan> status : Enum ("active" | "exhausted" | "expired")</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 6: PACKAGE ==================== -->
+  <g transform="translate(1050, 510)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="340" height="150" rx="8" fill="#111827" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="0" y="0" width="340" height="34" rx="8" fill="url(#hdrAmber)"/>
+    <rect x="0" y="24" width="340" height="10" fill="#f59e0b"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">PACKAGE (Bundle Template)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="32"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]</text>
+      <text y="50"><tspan fill="#94a3b8" font-weight="700">•</tspan> title : String ("5 Session Anxiety Protocol")</text>
+      <text y="68"><tspan fill="#34d399" font-weight="700">•</tspan> sessionCount : Number (e.g. 5)</text>
+      <text y="86"><tspan fill="#38bdf8" font-weight="700">💰</tspan> price : Number (paise/cents)  |  currency : "INR"</text>
+      <text y="104"><tspan fill="#94a3b8" font-weight="700">•</tspan> validityDays : Number (e.g. 90)  |  isActive : Boolean</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 7: PAYMENT ==================== -->
+  <g transform="translate(590, 720)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="440" height="170" rx="8" fill="#111827" stroke="#f43f5e" stroke-width="1.5"/>
+    <rect x="0" y="0" width="440" height="34" rx="8" fill="url(#hdrRose)"/>
+    <rect x="0" y="24" width="440" height="10" fill="#f43f5e"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">PAYMENT (Financial Transaction Ledger)</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14"><tspan fill="#38bdf8" font-weight="700">🔑 _id</tspan> : ObjectId [PK]</text>
+      <text y="32"><tspan fill="#a78bfa" font-weight="700">🔗 therapistId</tspan> : ObjectId [FK]  |  <tspan fill="#a78bfa" font-weight="700">🔗 clientId</tspan> : ObjectId [FK]</text>
+      <text y="50"><tspan fill="#a78bfa" font-weight="700">🔗 sessionId</tspan> : [FK, Nullable]  |  <tspan fill="#a78bfa" font-weight="700">🔗 clientPackageId</tspan> : [FK, Nullable]</text>
+      <text y="68"><tspan fill="#38bdf8" font-weight="700">💰 amount</tspan> : Number  |  <tspan fill="#94a3b8">currency : String ("INR")</tspan></text>
+      <text y="86"><tspan fill="#94a3b8" font-weight="700">•</tspan> paymentType : Enum ("session" | "package" | "subscription")</text>
+      <text y="104"><tspan fill="#34d399" font-weight="700">✓</tspan> status : Enum ("created" | "authorized" | "captured" | "failed" | "refunded")</text>
+      <text y="122"><tspan fill="#94a3b8" font-weight="700">💳</tspan> razorpayOrderId / razorpayPaymentId : String</text>
+    </g>
+  </g>
+
+  <!-- ==================== ENTITY 8: AVAILABILITY & AI_INSIGHT ==================== -->
+  <g transform="translate(1050, 720)" filter="url(#tableShadow)">
+    <rect x="0" y="0" width="340" height="170" rx="8" fill="#111827" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="0" y="0" width="340" height="34" rx="8" fill="url(#hdrCyan)"/>
+    <rect x="0" y="24" width="340" height="10" fill="#0284c7"/>
+    <text x="12" y="22" fill="#ffffff" font-size="13" font-weight="700">AVAILABILITY &amp; AI_INSIGHT</text>
+
+    <g transform="translate(12, 48)" font-size="11" fill="#e2e8f0">
+      <text y="14" fill="#38bdf8" font-weight="700">AVAILABILITY MODEL:</text>
+      <text y="32"><tspan fill="#a78bfa">🔗 therapistId</tspan> : [FK]  |  weeklySlots : [SubDoc]</text>
+      <text y="50">• dateOverrides : [SubDoc]  |  bufferMinutes : Number</text>
+
+      <line x1="0" y1="62" x2="316" y2="62" stroke="#334155" stroke-width="1"/>
+
+      <text y="80" fill="#a855f7" font-weight="700">AI_INSIGHT CACHE MODEL:</text>
+      <text y="98"><tspan fill="#a78bfa">🔗 therapistId</tspan> : [FK]  |  type : Enum (revenue|slot)</text>
+      <text y="116">📦 payload : JSON (forecasted revenue, best slots)</text>
+    </g>
+  </g>
+
+  <!-- ==================== BOTTOM LEGEND ==================== -->
+  <g transform="translate(60, 930)">
+    <rect x="0" y="0" width="1480" height="48" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="20" y="30" fill="#94a3b8" font-size="12" font-weight="700">LEGEND:</text>
+
+    <text x="100" y="30" fill="#38bdf8" font-size="12"><tspan font-weight="700">🔑 PK</tspan> Primary Key</text>
+    <text x="240" y="30" fill="#a78bfa" font-size="12"><tspan font-weight="700">🔗 FK</tspan> Foreign Key</text>
+    <text x="380" y="30" fill="#fbbf24" font-size="12"><tspan font-weight="700">★ UK</tspan> Unique Index</text>
+    <text x="520" y="30" fill="#f59e0b" font-size="12"><tspan font-weight="700">🧠 AI SubDoc</tspan> ML Inference Output</text>
+    <text x="740" y="30" fill="#34d399" font-size="12"><tspan font-weight="700">1:N</tspan> One-to-Many</text>
+    <text x="830" y="30" fill="#34d399" font-size="12"><tspan font-weight="700">1:1</tspan> One-to-One</text>
+
+    <text x="960" y="30" fill="#cbd5e1" font-size="11">Architecture: Multi-Tenant Tenant-Partitioned Data Store via Therapist ID Scope</text>
+  </g>
+</svg>

@@ -1,27 +1,33 @@
-/* common.css — shared utility component styles */
+/* ============================================================
+   UNFAZED — Shared Common Components Styles
+   ============================================================ */
 
 /* ── Spinner ─────────────────────────────────────────────── */
 .spinner-ring {
-  border: 3px solid var(--border);
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-top-color: var(--teal);
+  border-right-color: var(--teal);
   border-radius: 50%;
-  animation: spin 0.75s linear infinite;
+  animation: spin 0.75s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
   flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.4));
 }
 
 .spinner-fullpage {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--bg-base);
+  gap: 16px;
 }
 
 .spinner-inline {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 36px;
 }
 
 /* ── Empty State ─────────────────────────────────────────── */
@@ -30,38 +36,42 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 56px 24px;
+  gap: 14px;
+  padding: 64px 24px;
   text-align: center;
 }
 
 .empty-state-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--teal);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  margin-bottom: 4px;
 }
 
 .empty-state-title {
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .empty-state-desc {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text-secondary);
-  max-width: 320px;
+  max-width: 360px;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .empty-state-action {
-  margin-top: 4px;
+  margin-top: 8px;
 }

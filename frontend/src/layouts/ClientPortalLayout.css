@@ -70,10 +70,42 @@
   background: var(--bg-elevated);
 }
 
+.cp-nav-link--login {
+  color: var(--teal) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  background: var(--teal-glow);
+}
+
+.cp-nav-link--login:hover {
+  background: rgba(6, 182, 212, 0.25);
+  color: #22D3EE !important;
+  transform: translateY(-1px);
+}
+
+.cp-nav-link--portal {
+  color: #A855F7 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: var(--violet-glow);
+}
+
+.cp-nav-link--portal:hover {
+  background: rgba(139, 92, 246, 0.25);
+  color: #C084FC !important;
+}
+
 .cp-nav-link--cta {
   background: linear-gradient(135deg, var(--teal), #0D9488);
   color: white !important;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .cp-nav-link--cta:hover {

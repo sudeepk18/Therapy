@@ -1,23 +1,82 @@
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  position: relative;
+  background-color: var(--bg-base);
+  overflow: hidden;
+}
+
+/* ── Ambient Glow Spheres ───────────────────────────────────── */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(100px);
+  opacity: 0.28;
+}
+
+.ambient-glow--teal {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--teal) 0%, rgba(6, 182, 212, 0) 70%);
+  top: -120px;
+  left: 280px;
+}
+
+.ambient-glow--violet {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--violet) 0%, rgba(139, 92, 246, 0) 70%);
+  bottom: 0px;
+  right: 60px;
 }
 
 .app-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
   min-width: 0;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
 
 .app-content {
   flex: 1;
-  padding: 28px 32px;
-  animation: fadeIn 0.2s ease forwards;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 24px 36px;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.app-content-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .app-content {
+    padding: 24px 20px;
+  }
 }
 
 @media (max-width: 768px) {
   .app-content {
-    padding: 20px 16px;
+    padding: 18px 14px;
+  }
+  .ambient-glow--teal {
+    left: 20px;
+    width: 320px;
+    height: 320px;
+  }
+  .ambient-glow--violet {
+    right: 0px;
+    width: 300px;
+    height: 300px;
   }
 }
